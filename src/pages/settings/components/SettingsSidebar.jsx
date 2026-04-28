@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
-import { useAuth } from "../../../auth/AuthContext";
 
 const menu111 = [
   { label: "Profile", path: "/settings/profile" },
@@ -158,12 +157,13 @@ export default function SettingsSidebar() {
   const [openMenu, setOpenMenu] = useState(null);
 
   return (
-    <div className="w-56 bg-gray-50 border-r border-gray-200 min-h-screen">
-      <div className="p-6 border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900">Settings</h2>
+    <aside className="sticky top-0 h-screen w-72 border-r border-slate-200 bg-white">
+      <div className="border-b border-slate-200 px-5 py-4">
+        <h2 className="text-base font-semibold text-slate-900">Settings</h2>
+        <p className="mt-0.5 text-xs text-slate-500">System configuration</p>
       </div>
 
-      <ul className="text-sm">
+      <ul className="space-y-1 overflow-y-auto p-3 text-sm">
         {menu.map((item, index) => {
           return (
             <li key={index}>
@@ -172,10 +172,10 @@ export default function SettingsSidebar() {
                 <NavLink
                   to={item.path}
                   className={({ isActive }) =>
-                    `block px-6 py-3 ${
+                    `block rounded-md px-3 py-2 transition ${
                       isActive
-                        ? "text-blue-600 font-medium"
-                        : "text-gray-700"
+                        ? "bg-slate-900 font-medium text-white"
+                        : "text-slate-700 hover:bg-slate-100"
                     }`
                   }
                 >
@@ -190,26 +190,26 @@ export default function SettingsSidebar() {
                     onClick={() =>
                       setOpenMenu(openMenu === item.label ? null : item.label)
                     }
-                    className="w-full text-left px-6 py-3 flex justify-between items-center"
+                    className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-slate-700 transition hover:bg-slate-100"
                   >
-                    <span>{item.label}</span>
+                    <span className="font-medium">{item.label}</span>
                     <ChevronDown
                       size={16}
-                      className={openMenu === item.label ? "rotate-180" : ""}
+                      className={`transition ${openMenu === item.label ? "rotate-180 text-slate-700" : "text-slate-500"}`}
                     />
                   </button>
 
                   {openMenu === item.label && (
-                    <ul className="bg-gray-100">
+                    <ul className="ml-2 mt-1 space-y-1 rounded-md border border-slate-200 bg-slate-50 p-2">
                       {item.children.map((child) => (
                         <li key={child.label}>
                           <NavLink
                             to={child.path}
                             className={({ isActive }) =>
-                              `block px-6 py-2 ${
+                              `block rounded-md px-3 py-1.5 text-xs transition ${
                                 isActive
-                                  ? "text-blue-600 font-medium"
-                                  : "text-gray-600"
+                                  ? "bg-white font-semibold text-slate-900"
+                                  : "text-slate-600 hover:bg-slate-100"
                               }`
                             }
                           >
@@ -225,6 +225,6 @@ export default function SettingsSidebar() {
           );
         })}
       </ul>
-    </div>
+    </aside>
   );
 }

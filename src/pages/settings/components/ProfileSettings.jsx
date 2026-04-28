@@ -7,24 +7,17 @@ import { useAuth } from "../../../auth/AuthContext";
 import AccessDenied from "../../components/AccessDenied";
 
 const DEFAULT_AVATAR = DefaultAvatar;
-const AVATAR_BASE_URL = import.meta.env.VITE_API_BASE_URL_Image_URl;
 
 export default function ProfileSettings() {
   useDynamicTitle("Profile Settings");
 
-  console.log("API Base URL:", import.meta.env.VITE_API_BASE_URL);
-
-  const { can, permissions } = useAuth();
-  console.log("User Permissions profile setting:", can);
-  console.log("User Permissions profile setting:", permissions);
+  const { can } = useAuth();
 
   const {
     profile,
     getProfile,
     updateProfile,
     removeAvatar,
-    showBrandName,
-    setShowBrandName,
   } = useProfile();
 
   const [editMode, setEditMode] = useState(false);
@@ -116,17 +109,20 @@ export default function ProfileSettings() {
 
   return (
     <SettingsLayout>
-      <div className="bg-white rounded-xl border p-6 space-y-6">
+      <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         {/* HEADER */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold">Profile</h2>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Profile</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Keep your account information updated for better account security and communication.
+            </p>
           </div>
 
           {!editMode ? (
             <button
               onClick={() => setEditMode(true)}
-              className="text-sm px-4 py-2 border rounded-lg hover:bg-gray-50"
+              className="h-10 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               Edit
             </button>
@@ -134,13 +130,13 @@ export default function ProfileSettings() {
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition hover:bg-indigo-700"
               >
                 Save
               </button>
               <button
                 onClick={() => setEditMode(false)}
-                className="text-sm px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="h-10 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 Cancel
               </button>
@@ -166,21 +162,22 @@ export default function ProfileSettings() {
           </button>
         </div> */}
 
-        <hr />
+        <div className="border-t border-slate-200" />
 
         {/* PROFILE IMAGE */}
-        <div className="flex items-center gap-6">
-          <div className="w-24 h-24 rounded-full border bg-gray-50 overflow-hidden flex items-center justify-center">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+          <div className="flex items-center gap-5">
+          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-slate-300 bg-white">
             <img
               src={avatar}
               alt="Avatar"
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           </div>
 
           {editMode && (
             <div className="flex gap-3">
-              <label className="px-4 py-1.5 text-sm border rounded-lg cursor-pointer hover:bg-gray-50">
+              <label className="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
                 Upload
                 <input
                   type="file"
@@ -189,41 +186,40 @@ export default function ProfileSettings() {
                   onChange={handleAvatarChange}
                 />
               </label>
-
-              {/* <button
+              <button
                 onClick={handleRemoveAvatar}
-                className="px-4 py-1.5 text-sm border text-red-600 rounded-lg hover:bg-red-50"
+                className="rounded-lg border border-rose-300 bg-white px-4 py-2 text-sm font-medium text-rose-600 transition hover:bg-rose-50"
               >
                 Remove
-              </button> */}
+              </button>
             </div>
           )}
+          </div>
         </div>
 
-        <hr />
+        <div className="border-t border-slate-200" />
 
         {/* PROFILE INFO */}
-        <div className="space-y-5 text-sm">
+        <div className="grid gap-4 text-sm md:grid-cols-2">
           {["name", "email", "phone"].map((field) => (
-            <div key={field}>
-              <p className="font-medium capitalize">{field}</p>
+            <div key={field} className="space-y-1 rounded-lg border border-slate-200 bg-white p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{field}</p>
               {editMode ? (
                 <input
                   name={field}
                   value={form[field]}
                   onChange={handleChange}
-                  className="mt-1 w-full border rounded-lg px-3 py-2"
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
                 />
               ) : (
-                <p className="text-gray-500">{form[field]}</p>
+                <p className="font-medium text-slate-700">{form[field] || "—"}</p>
               )}
-              <hr />
             </div>
           ))}
 
           {/* PASSWORD */}
-          <div>
-            <p className="font-medium">Password</p>
+          <div className="space-y-1 rounded-lg border border-slate-200 bg-white p-3 md:col-span-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Password</p>
             {editMode ? (
               <input
                 type="password"
@@ -231,10 +227,10 @@ export default function ProfileSettings() {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="New password"
-                className="mt-1 w-full border rounded-lg px-3 py-2"
+                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
               />
             ) : (
-              <p className="text-gray-500">••••••••</p>
+              <p className="font-medium text-slate-700">••••••••</p>
             )}
           </div>
         </div>

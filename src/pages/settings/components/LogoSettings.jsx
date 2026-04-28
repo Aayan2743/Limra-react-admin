@@ -9,13 +9,9 @@ import AccessDenied from "../../components/AccessDenied";
 const DEFAULT_LOGO = defaultImage;
 const DEFAULT_FAVICON = defaultImage;
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL_Image_URl;
-
 export default function LogoSettings() {
 
-    const { can,permissions } = useAuth();
-  console.log("User Permissions dfdfdfdf:",can);
-  console.log("User Permissions array:",permissions);
+    const { can } = useAuth();
   useDynamicTitle("Logo Settings");
 
   const { settings, getLogoSettings, updateLogoSettings } = useLogoSettings();
@@ -97,15 +93,20 @@ export default function LogoSettings() {
 
   return (
     <SettingsLayout>
-      <div className="bg-white rounded-xl border p-6 space-y-6">
+      <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         {/* HEADER */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Logo</h2>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Brand Assets</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Update your application name, main logo, and favicon used across the platform.
+            </p>
+          </div>
 
           {!editMode ? (
             <button
               onClick={() => setEditMode(true)}
-              className="text-sm px-4 py-2 border rounded-lg hover:bg-gray-50"
+              className="h-10 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               Edit
             </button>
@@ -113,13 +114,13 @@ export default function LogoSettings() {
             <div className="flex gap-2">
               <button
                 onClick={handleSave}
-                className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="h-10 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition hover:bg-indigo-700"
               >
                 Save
               </button>
               <button
                 onClick={() => setEditMode(false)}
-                className="text-sm px-4 py-2 border rounded-lg hover:bg-gray-50"
+                className="h-10 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 Cancel
               </button>
@@ -128,76 +129,86 @@ export default function LogoSettings() {
         </div>
 
         {/* APPLICATION NAME */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Application Name</p>
+        <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Application Name
+          </p>
 
           {editMode ? (
             <input
               value={appName}
               onChange={(e) => setAppName(e.target.value)}
-              className="w-full md:w-1/2 border rounded-lg px-3 py-2 text-sm"
+              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 md:w-1/2"
             />
           ) : (
-            <p className="text-gray-600 text-sm">{appName}</p>
+            <p className="text-sm font-medium text-slate-700">{appName || "—"}</p>
           )}
         </div>
 
-        <hr />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">App Logo</p>
+              <p className="mt-1 text-[11px] text-slate-500">Recommended: square PNG with transparent background.</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border border-slate-300 bg-white">
+                {logo ? (
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <span className="text-sm text-slate-400">No Logo</span>
+                )}
+              </div>
 
-        {/* LOGO */}
-        <div className="flex items-center gap-6">
-          <div className="w-24 h-24 rounded-full border bg-gray-50 overflow-hidden flex items-center justify-center">
-            {logo ? (
-              <img
-                src={logo}
-                alt="Logo"
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <span className="text-gray-400 text-sm">No Logo</span>
-            )}
+              {editMode && (
+                <label className="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                  Upload Logo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => handleImageChange(e, "logo")}
+                  />
+                </label>
+              )}
+            </div>
           </div>
 
-          {editMode && (
-            <label className="px-4 py-1.5 text-sm border rounded-lg cursor-pointer hover:bg-gray-50">
-              Upload
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => handleImageChange(e, "logo")}
-              />
-            </label>
-          )}
-        </div>
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Favicon</p>
+              <p className="mt-1 text-[11px] text-slate-500">Recommended: 32x32 PNG/ICO for browser tabs.</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-slate-300 bg-white">
+                {favicon ? (
+                  <img
+                    src={favicon}
+                    alt="Favicon"
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <span className="text-xs text-slate-400">ICO</span>
+                )}
+              </div>
 
-        <hr />
-
-        {/* FAVICON */}
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded border bg-gray-50 overflow-hidden flex items-center justify-center">
-            {favicon ? (
-              <img
-                src={favicon}
-                alt="Favicon"
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <span className="text-gray-400 text-xs">ICO</span>
-            )}
+              {editMode && (
+                <label className="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                  Upload Favicon
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => handleImageChange(e, "favicon")}
+                  />
+                </label>
+              )}
+            </div>
           </div>
-
-          {editMode && (
-            <label className="px-4 py-1.5 text-sm border rounded-lg cursor-pointer hover:bg-gray-50">
-              Upload
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={(e) => handleImageChange(e, "favicon")}
-              />
-            </label>
-          )}
         </div>
       </div>
     </SettingsLayout>

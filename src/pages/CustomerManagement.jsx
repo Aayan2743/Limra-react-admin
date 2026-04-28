@@ -6,9 +6,7 @@ import { useAuth } from "../auth/AuthContext";
 import AccessDenied from "./components/AccessDenied";
 export default function CustomerManagement() {
 
-    const { can,permissions } = useAuth();
-  console.log("User Permissions dfdfdfdf:",can);
-  console.log("User Permissions array:",permissions);
+    const { can } = useAuth();
 
 
   const navigate = useNavigate(); //
@@ -19,6 +17,9 @@ export default function CustomerManagement() {
 
   const [openModal, setOpenModal] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
+  const currentPage = meta.current_page || 1;
+  const lastPage = meta.last_page || 1;
+  const perPage = meta.per_page || 10;
 
   /* ================= FETCH CUSTOMERS ================= */
   useEffect(() => {
@@ -76,31 +77,36 @@ export default function CustomerManagement() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* ================= HEADER ================= */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Customer Management</h1>
+    <div className="min-h-screen space-y-6 bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-4 md:p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Customer Management</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              View customer activity, add new profiles, and upload bulk customer data quickly.
+            </p>
+          </div>
 
-  {
-    can("customer_management.add") && (
-        <button
-          onClick={() => setOpenModal(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
-        >
-          + Add Customer 
-          
-        </button>
-  )
-}
-
-
+          {can("customer_management.add") && (
+            <button
+              onClick={() => setOpenModal(true)}
+              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700"
+            >
+              + Add Customer
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ================= BULK SECTION ================= */}
-        {
-    can("customer_management.bulk") && (
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <h3 className="font-semibold">Bulk Upload</h3>
+      {can("customer_management.bulk") && (
+      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div>
+          <h3 className="font-semibold text-slate-900">Bulk Upload</h3>
+          <p className="mt-1 text-xs text-slate-500">
+            Enter one customer per line in `Name,Phone` format.
+          </p>
+        </div>
 
         <textarea
           placeholder="Name,Phone
@@ -108,26 +114,26 @@ John Doe,9876543210
 Jane Smith,9123456789"
           value={bulkInput}
           onChange={(e) => setBulkInput(e.target.value)}
-          className="w-full border rounded-lg p-3 h-32 text-sm"
+          className="h-36 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
         />
 
         <button
           onClick={handleBulkUpload}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg"
+          className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
         >
           Upload Bulk Customers
         </button>
       </div>
-      )
-}
+      )}
 
       {/* ================= TABLE ================= */}
-      <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto">
         {loading ? (
-          <p className="p-6 text-center text-gray-500">Loading customers...</p>
+          <p className="p-10 text-center text-slate-500">Loading customers...</p>
         ) : (
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-100 text-gray-600">
+            <thead className="bg-slate-100 text-slate-700">
               <tr>
                 <th className="px-4 py-3 text-left">#</th>
                 <th className="px-4 py-3 text-left">Name</th>
@@ -138,55 +144,62 @@ Jane Smith,9123456789"
             </thead>
 
             <tbody>
-              {customers.map((c, i) => (
+              {customers.length ? customers.map((c, i) => (
                 <tr
                   key={c.id}
-                  className="border-t hover:bg-gray-50 cursor-pointer"
+                  className="cursor-pointer border-t border-slate-100 transition hover:bg-slate-50/80"
                   onClick={() => navigate(`/customers/${c.id}/orders`)}
                 >
                   <td className="px-4 py-3">
-                    {(meta.current_page - 1) * meta.per_page + i + 1}
+                    {(currentPage - 1) * perPage + i + 1}
                   </td>
 
-                  <td className="px-4 py-3 font-medium">{c.name}</td>
+                  <td className="px-4 py-3 font-medium text-slate-900">{c.name}</td>
 
-                  <td className="px-4 py-3">{c.phone}</td>
+                  <td className="px-4 py-3 text-slate-700">{c.phone}</td>
 
                   <td className="px-4 py-3">
-                    <span className="bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full text-xs font-semibold">
+                    <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
                       {c.sales_count}
                     </span>
                   </td>
 
-                  <td className="px-4 py-3 font-semibold">
+                  <td className="px-4 py-3 font-semibold text-slate-900">
                     ₹ {c.sales_sum_grand_total ?? 0}
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan="5" className="py-10 text-center text-slate-500">
+                    No customers found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         )}
+        </div>
       </div>
 
       {/* ================= PAGINATION ================= */}
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-500">
-          Page {meta.current_page} of {meta.last_page}
+      <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <p className="text-sm text-slate-500">
+          Page {currentPage} of {lastPage}
         </p>
 
         <div className="space-x-2">
           <button
-            disabled={meta.current_page === 1}
+            disabled={currentPage === 1}
             onClick={() => setPage(page - 1)}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+            className="rounded-lg border border-slate-300 px-3 py-1 text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
           >
             Prev
           </button>
 
           <button
-            disabled={meta.current_page === meta.last_page}
+            disabled={currentPage === lastPage}
             onClick={() => setPage(page + 1)}
-            className="px-3 py-1 border rounded disabled:opacity-40"
+            className="rounded-lg border border-slate-300 px-3 py-1 text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
           >
             Next
           </button>
@@ -236,15 +249,20 @@ function AddCustomerModal({ open, onClose, onSuccess }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-2xl w-96 space-y-4 shadow-xl">
-        <h3 className="text-lg font-semibold">Add Customer</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+      <div className="w-full max-w-md space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">Add Customer</h3>
+          <p className="mt-1 text-xs text-slate-500">
+            Add a customer profile for future orders and billing.
+          </p>
+        </div>
 
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Customer Name"
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
         />
 
         <input
@@ -253,17 +271,17 @@ function AddCustomerModal({ open, onClose, onSuccess }) {
             setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
           }
           placeholder="Phone Number"
-          className="w-full border rounded-lg px-3 py-2 text-sm"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
         />
 
         <div className="flex justify-end gap-3 pt-2">
-          <button onClick={onClose} className="border px-4 py-2 rounded-lg">
+          <button onClick={onClose} className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50">
             Cancel
           </button>
 
           <button
             onClick={handleSubmit}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+            className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700"
           >
             Save
           </button>

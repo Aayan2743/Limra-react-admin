@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import api from "../../api/axios";
 import { useAuth } from "../../auth/AuthContext";
 import AccessDenied from "../components/AccessDenied";
+import { showErrorToast, showSuccessToast } from "../../utils/swal";
 
 //assign_roles.view
 export default function AssignRole() {
 
-    const { can,permissions } = useAuth();
-  console.log("User Permissions dfdfdfdf:",can);
-  console.log("User Permissions array:",permissions);
+    const { can } = useAuth();
 
 
   const [users, setUsers] = useState([]);
@@ -44,16 +43,18 @@ export default function AssignRole() {
 
   /* ================= ASSIGN ROLE ================= */
   const handleAssign = async (userId, role) => {
+    if (!role) return;
     try {
       await api.post("/admin-dashboard/assign-role", {
         user_id: userId,
         role: role,
       });
 
-      alert("Role assigned");
+      showSuccessToast("Role assigned");
       fetchUsers(); // refresh
     } catch (e) {
       console.error(e);
+      showErrorToast("Failed to assign role");
     }
   };
 
@@ -64,10 +65,11 @@ export default function AssignRole() {
       role: role,
     });
 
-    alert("Role removed");
+    showSuccessToast("Role removed");
     fetchUsers(); // refresh
   } catch (e) {
     console.error(e);
+    showErrorToast("Failed to remove role");
   }
 };
 
@@ -81,32 +83,42 @@ export default function AssignRole() {
 
 
 
-   return (
-  <div className="p-6 space-y-6">
-    {/* HEADER */}
-    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-      <h1 className="text-2xl font-bold text-gray-800">
-        Assign Roles
-      </h1>
+  const showAssignColumn = can("assign_roles.assign");
+  const colSpan = showAssignColumn ? 4 : 3;
 
-      <input
-        placeholder="Search user..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="border px-4 py-2 rounded-xl w-full md:w-72 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-      />
+   return (
+  <div className="min-h-screen space-y-6 bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-4 md:p-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+            Assign Roles
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Manage user access by assigning and removing roles quickly.
+          </p>
+        </div>
+
+        <input
+          placeholder="Search user..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 md:w-80"
+        />
+      </div>
     </div>
 
     {/* TABLE CARD */}
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden border">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-gray-600">
+        <thead className="bg-slate-100 text-slate-700">
           <tr>
             <th className="p-4 text-left">User</th>
             <th className="p-4 text-left">Email</th>
             <th className="p-4 text-left">Roles</th>
               
-    {can("assign_roles.assign") && (
+    {showAssignColumn && (
 
             <th className="p-4 text-left">Assign</th>
     )}
@@ -116,7 +128,7 @@ export default function AssignRole() {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="4" className="text-center py-10 text-gray-500">
+              <td colSpan={colSpan} className="py-10 text-center text-slate-500">
                 Loading...
               </td>
             </tr>
@@ -124,15 +136,15 @@ export default function AssignRole() {
             users.map((u) => (
               <tr
                 key={u.id}
-                className="border-t hover:bg-gray-50 transition"
+                className="border-t border-slate-100 transition hover:bg-slate-50/70"
               >
                 {/* USER */}
-                <td className="p-4 font-medium text-gray-800">
+                <td className="p-4 font-medium text-slate-900">
                   {u.name}
                 </td>
 
                 {/* EMAIL */}
-                <td className="p-4 text-gray-600">
+                <td className="p-4 text-slate-600">
                   {u.email}
                 </td>
 
@@ -143,14 +155,14 @@ export default function AssignRole() {
                       {u.roles.map((role) => (
                         <div
                           key={role.id}
-                          className="flex items-center gap-2 bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-medium"
+                          className="flex items-center gap-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700"
                         >
                           {role.name}
 
                           {/* REMOVE BUTTON */}
                           <button
                             onClick={() => handleRemove(u.id, role.name)}
-                            className="bg-red-100 hover:bg-red-200 text-red-600 px-2 rounded-full text-xs"
+                            className="rounded-full bg-rose-100 px-2 text-xs text-rose-600 transition hover:bg-rose-200"
                           >
                             ✕
                           </button>
@@ -166,10 +178,10 @@ export default function AssignRole() {
 
                 {/* ASSIGN */}
 
-                    {can("assign_roles.assign") && (
+                    {showAssignColumn && (
                 <td className="p-4">
                   <select
-                    className="border px-3 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
                     defaultValue=""
                     onChange={(e) =>
                       handleAssign(u.id, e.target.value)
@@ -188,13 +200,14 @@ export default function AssignRole() {
             ))
           ) : (
             <tr>
-              <td colSpan="4" className="text-center py-10 text-gray-400">
+              <td colSpan={colSpan} className="py-10 text-center text-slate-400">
                 No users found
               </td>
             </tr>
           )}
         </tbody>
       </table>
+      </div>
     </div>
   </div>
 );
