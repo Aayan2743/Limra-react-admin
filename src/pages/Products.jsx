@@ -30,6 +30,7 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const [columnOpen, setColumnOpen] = useState(false);
+  const totalProducts = products.length;
 
   // 🔥 COLUMN CONFIG
   const defaultColumns = [
@@ -67,17 +68,9 @@ export default function Products() {
   }, []);
 
   useEffect(() => {
-    api.get("/admin-dashboard/sections").then((res) => {
-      setSections(res.data.data || []);
-    });
-  }, []);
-
-  useEffect(() => {
     const loadSections = async () => {
       try {
         const res = await api.get("/admin-dashboard/sections");
-        console.log("Sections API:", res.data); // 👈 DEBUG
-
         setSections(res.data.data || []);
       } catch (err) {
         console.log("Section load error", err);
@@ -127,87 +120,155 @@ export default function Products() {
   if (!can("product.view")) return <div>No Access</div>;
 
   return (
-    <div className="p-5 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4 md:p-6">
+      <div className="mx-auto max-w-7xl space-y-6">
       {/* 🔥 HEADER */}
-      <div className="flex flex-wrap justify-between items-center gap-3">
-        <h2 className="text-2xl font-bold">Products</h2>
+      <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-r from-indigo-50 via-blue-50 to-cyan-50" />
+        <div className="relative flex flex-col gap-5 p-6 md:flex-row md:items-start md:justify-between md:p-8">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-indigo-700 shadow-sm">
+              Product catalog
+            </div>
+            <div>
+              <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+                Products
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm text-slate-500">
+                Manage your catalog with faster search, cleaner controls, and a
+                more polished overview of product status and sections.
+              </p>
+            </div>
+          </div>
 
-        <div className="flex flex-wrap gap-2">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search..."
-            className="px-4 py-2 border rounded-lg"
-          />
+          <div className="grid grid-cols-3 gap-3 md:min-w-[360px]">
+            <MetricCard label="Loaded" value={String(totalProducts).padStart(2, "0")} />
+            <MetricCard label="Page" value={`${page}/${totalPages}`} />
+            <MetricCard label="Visible cols" value={String(visibleColumns.length)} />
+          </div>
+        </div>
+      </div>
 
-          <button
-            onClick={() => {
-              setQuery(search);
-              setPage(1);
-            }}
-            className="px-4 py-2 bg-gray-100 rounded-lg"
-          >
-            Search
-          </button>
+      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_12px_35px_rgba(15,23,42,0.06)]">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-slate-800">Search & Filters</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Find products quickly, customize the table view, or create a new product.
+            </p>
+          </div>
 
-          <button
-            onClick={() => {
-              setSearch("");
-              setQuery("");
-            }}
-            className="px-4 py-2 bg-red-100 rounded-lg"
-          >
-            Reset
-          </button>
+          <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
+            <div className="flex min-w-[280px] items-center rounded-2xl border border-slate-200 bg-slate-50 px-4">
+              <span className="mr-3 text-slate-400">⌕</span>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setQuery(search);
+                    setPage(1);
+                  }
+                }}
+                placeholder="Search by product name..."
+                className="h-12 w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+              />
+            </div>
 
-          {/* 🔥 ADD */}
-          {can("product.add") && (
             <button
-              onClick={() => setOpenAdd(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
-            >
-              + Add Product
-            </button>
-          )}
-
-          {/* 🔥 COLUMN TOGGLE */}
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setColumnOpen(!columnOpen);
+              onClick={() => {
+                setQuery(search);
+                setPage(1);
               }}
-              className="px-4 py-2 bg-white border rounded-xl shadow"
+              className="h-12 rounded-2xl bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
-              ⚙ Columns
+              Search
             </button>
 
-            {columnOpen && (
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-xl border p-4 z-50"
+            <button
+              onClick={() => {
+                setSearch("");
+                setQuery("");
+                setPage(1);
+              }}
+              className="h-12 rounded-2xl border border-red-200 bg-red-50 px-5 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+            >
+              Reset
+            </button>
+
+            {/* 🔥 ADD */}
+            {can("product.add") && (
+              <button
+                onClick={() => setOpenAdd(true)}
+                className="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-600 px-5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(79,70,229,0.25)] transition hover:scale-[1.01]"
               >
-                {defaultColumns.map((col) => (
-                  <label key={col} className="flex gap-2 text-sm py-1">
-                    <input
-                      type="checkbox"
-                      checked={visibleColumns.includes(col)}
-                      onChange={() => toggleColumn(col)}
-                    />
-                    {col}
-                  </label>
-                ))}
-              </div>
+                + Add Product
+              </button>
             )}
+
+            {/* 🔥 COLUMN TOGGLE */}
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setColumnOpen(!columnOpen);
+                }}
+                className="h-12 rounded-2xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              >
+                Columns
+              </button>
+
+              {columnOpen && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-14 z-50 w-60 rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl"
+                >
+                  <p className="mb-3 text-sm font-semibold text-slate-800">
+                    Visible Columns
+                  </p>
+                  <div className="space-y-2">
+                    {defaultColumns.map((col) => (
+                      <label
+                        key={col}
+                        className="flex items-center gap-3 rounded-xl px-2 py-2 text-sm text-slate-600 transition hover:bg-slate-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={visibleColumns.includes(col)}
+                          onChange={() => toggleColumn(col)}
+                          className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span className="capitalize">{col}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* 🔥 TABLE */}
-      <div className="bg-white rounded-2xl shadow-lg border p-4 overflow-x-auto">
-        <table className="min-w-[1000px] w-full text-sm border-separate border-spacing-y-2">
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)]">
+        <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-4">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-slate-800">Product List</h3>
+              <p className="text-sm text-slate-500">
+                Review products, update status, manage sections, and edit catalog details.
+              </p>
+            </div>
+            <span className="inline-flex w-fit items-center rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-500 ring-1 ring-slate-200">
+              {query ? `Filtered by "${query}"` : "All products"}
+            </span>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto p-4">
+        <table className="min-w-[1100px] w-full text-sm border-separate border-spacing-y-3">
           <thead>
-            <tr className="text-left text-gray-500 text-xs uppercase">
+            <tr className="text-left text-[11px] uppercase tracking-wide text-slate-400">
               {visibleColumns.includes("id") && <th className="px-4">S No</th>}
               {visibleColumns.includes("image") && (
                 <th className="px-4">Image</th>
@@ -236,36 +297,61 @@ export default function Products() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="8" className="text-center py-6">
-                  Loading...
+                <td colSpan="8" className="py-10 text-center">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-indigo-500"></span>
+                    Loading products...
+                  </div>
+                </td>
+              </tr>
+            ) : products.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="py-12 text-center">
+                  <div className="mx-auto max-w-md space-y-2">
+                    <p className="text-base font-semibold text-slate-700">
+                      No products found
+                    </p>
+                    <p className="text-sm text-slate-400">
+                      Try changing your search or add a new product to get started.
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (
               products.map((p) => (
                 <tr
                   key={p.id}
-                  className="bg-white shadow-sm hover:shadow-md rounded-xl"
+                  className="rounded-2xl bg-slate-50/60 shadow-sm transition hover:bg-white hover:shadow-md"
                 >
                   {visibleColumns.includes("id") && (
-                    <td className="px-4 py-3">{p.id}</td>
+                    <td className="px-4 py-4 font-medium text-slate-600">{p.id}</td>
                   )}
 
                   {visibleColumns.includes("image") && (
                     <td className="px-4 py-3">
-                      <img src={p.image_url} className="w-12 h-12 rounded-xl" />
+                      <img
+                        src={p.image_url}
+                        alt={p.name}
+                        className="h-14 w-14 rounded-2xl object-cover ring-1 ring-slate-200"
+                      />
                     </td>
                   )}
 
                   {visibleColumns.includes("name") && (
-                    <td className="px-4 py-3 font-semibold">{p.name}</td>
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="font-semibold text-slate-800">{p.name}</p>
+                        <p className="text-xs text-slate-400">Product ID #{p.id}</p>
+                      </div>
+                    </td>
                   )}
 
                   {visibleColumns.includes("category") && (
-                    <td className="px-4 py-3">{p.category_name}</td>
+                    <td className="px-4 py-3 text-slate-600">{p.category_name}</td>
                   )}
 
                   {visibleColumns.includes("price") && (
-                    <td className="px-4 py-3 text-green-600">
+                    <td className="px-4 py-3 font-semibold text-emerald-600">
                       ₹{p.final_price}
                     </td>
                   )}
@@ -283,14 +369,14 @@ export default function Products() {
                         {p.sections?.slice(0, 2).map((s) => (
                           <span
                             key={s.id}
-                            className="px-2 py-1 text-xs bg-indigo-100 text-indigo-600 rounded-full"
+                            className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600"
                           >
                             {s.name}
                           </span>
                         ))}
 
                         {p.sections?.length > 2 && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-slate-500">
                             +{p.sections.length - 2} more
                           </span>
                         )}
@@ -320,18 +406,19 @@ export default function Products() {
                             showErrorToast("Failed to load sections");
                           }
                         }}
-                        className="px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg text-sm shadow hover:scale-105 transition"
+                        className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-3 py-2 text-sm font-medium text-white shadow transition hover:scale-[1.02]"
                       >
                         Manage
                       </button>
                     </td>
                   )}
                   {visibleColumns.includes("action") && (
-                    <td className="px-4 py-3 flex gap-2">
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
                       {can("product.edit") && (
                         <button
                           onClick={() => handleEdit(p)}
-                          className="text-indigo-600"
+                          className="rounded-xl bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-600 transition hover:bg-indigo-100"
                         >
                           Edit
                         </button>
@@ -340,7 +427,7 @@ export default function Products() {
                       {can("product.delete") && (
                         <button
                           onClick={() => handleDelete(p.id)}
-                          className="text-red-500"
+                          className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-500 transition hover:bg-red-100"
                         >
                           Delete
                         </button>
@@ -348,6 +435,7 @@ export default function Products() {
 
                       {/* 🔥 IMPORTANT (YOU WERE MISSING THIS BEFORE) */}
                       {/* <ProductSectionAssign product={p} /> */}
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -355,27 +443,41 @@ export default function Products() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* 🔥 PAGINATION */}
-      <div className="flex justify-between items-center">
-        <select
-          value={perPage}
-          onChange={(e) => setPerPage(Number(e.target.value))}
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-        </select>
+      <div className="flex flex-col gap-4 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_12px_35px_rgba(15,23,42,0.06)] md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-slate-600">Rows per page</span>
+          <select
+            value={perPage}
+            onChange={(e) => setPerPage(Number(e.target.value))}
+            className="h-11 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+          </select>
+        </div>
 
-        <div className="flex gap-2">
-          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-slate-500">
+            Page <span className="font-semibold text-slate-700">{page}</span> of{" "}
+            <span className="font-semibold text-slate-700">{totalPages}</span>
+          </span>
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
             Prev
           </button>
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
+            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Next
+            Next SDS
           </button>
         </div>
       </div>
@@ -409,11 +511,21 @@ export default function Products() {
       />
 
       {sectionModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-xl">
-            <div className="flex justify-between mb-4">
-              <h2 className="text-lg font-semibold">Manage Sections</h2>
-              <button onClick={() => setSectionModalOpen(false)}>✕</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-[28px] border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Manage Sections</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Assign sections for `{sectionProduct?.name || "selected product"}`.
+                </p>
+              </div>
+              <button
+                onClick={() => setSectionModalOpen(false)}
+                className="rounded-xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-200"
+              >
+                ✕
+              </button>
             </div>
 
             <ProductSectionAssign
@@ -435,6 +547,18 @@ export default function Products() {
           </div>
         </div>
       )}
+      </div>
+    </div>
+  );
+}
+
+function MetricCard({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-semibold text-slate-900">{value}</p>
     </div>
   );
 }

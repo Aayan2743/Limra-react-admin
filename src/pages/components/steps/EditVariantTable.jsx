@@ -192,26 +192,24 @@ export default function EditVariantTable({
 
   if (!Array.isArray(data) || data.length === 0) {
     return (
-      <div className="text-sm text-gray-500 text-center py-6">
+      <div className="py-6 text-center text-sm text-gray-500">
         No variants generated
       </div>
     );
   }
 
-  console.log("EditVariantTable data:", data);
-
   return (
-    <div className="border rounded-xl bg-white shadow-sm">
-      <div className="px-5 py-3 border-b">
+    <div className="rounded-xl border bg-white shadow-sm">
+      <div className="border-b px-5 py-3">
         <h4 className="font-semibold text-gray-800">Generated Variants</h4>
         <p className="text-sm text-gray-500">
           Configure pricing, inventory and images per variant
         </p>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="max-h-[68vh] overflow-auto">
         <table className="w-full text-sm border-collapse">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="sticky top-0 z-10 bg-gray-50 text-gray-600 shadow-sm">
             <tr>
               <th className="px-3 py-2 text-left">Variant</th>
               <th className="px-3 py-2">Purchase Price</th>
@@ -235,7 +233,7 @@ export default function EditVariantTable({
                 <td className="px-3 py-2">
                   <input
                     type="number"
-                    className="w-24 border rounded px-2 py-1"
+                    className="w-24 rounded border px-2 py-1"
                     value={row.purchase_price ?? ""}
                     onChange={(e) =>
                       update(rowIndex, "purchase_price", e.target.value)
@@ -246,7 +244,7 @@ export default function EditVariantTable({
                 <td className="px-3 py-2">
                   <input
                     type="number"
-                    className="w-24 border rounded px-2 py-1"
+                    className="w-24 rounded border px-2 py-1"
                     value={row.price ?? ""}
                     onChange={(e) => update(rowIndex, "price", e.target.value)}
                   />
@@ -255,7 +253,7 @@ export default function EditVariantTable({
                 <td className="px-3 py-2">
                   <input
                     type="number"
-                    className="w-20 border rounded px-2 py-1"
+                    className="w-20 rounded border px-2 py-1"
                     value={row.discount ?? ""}
                     onChange={(e) =>
                       update(rowIndex, "discount", e.target.value)
@@ -265,7 +263,7 @@ export default function EditVariantTable({
 
                 <td className="px-3 py-2">
                   <input
-                    className="w-32 border rounded px-2 py-1"
+                    className="w-32 rounded border px-2 py-1"
                     value={row.sku ?? ""}
                     onChange={(e) => update(rowIndex, "sku", e.target.value)}
                   />
@@ -274,7 +272,7 @@ export default function EditVariantTable({
                 <td className="px-3 py-2">
                   <input
                     type="number"
-                    className="w-20 border rounded px-2 py-1"
+                    className="w-20 rounded border px-2 py-1"
                     value={row.qty ?? ""}
                     onChange={(e) => update(rowIndex, "qty", e.target.value)}
                   />
@@ -283,7 +281,7 @@ export default function EditVariantTable({
                 <td className="px-3 py-2">
                   <input
                     type="number"
-                    className="w-20 border rounded px-2 py-1"
+                    className="w-20 rounded border px-2 py-1"
                     value={row.low_qty ?? ""}
                     onChange={(e) =>
                       update(rowIndex, "low_qty", e.target.value)
@@ -292,31 +290,26 @@ export default function EditVariantTable({
                 </td>
 
 
-<td className="px-3 py-2 text-center">
-  <label className="inline-flex items-center cursor-pointer">
-    <input
-      type="checkbox"
-      className="sr-only peer"
-      checked={Number(row.is_returnable) === 1}
-      onChange={(e) =>
-        update(rowIndex, "is_returnable", e.target.checked ? 1 : 0)
-      }
-    />
+                <td className="px-3 py-2 text-center">
+                  <label className="inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      className="peer sr-only"
+                      checked={Number(row.is_returnable) === 1}
+                      onChange={(e) =>
+                        update(rowIndex, "is_returnable", e.target.checked ? 1 : 0)
+                      }
+                    />
 
-    <div className="
-      w-11 h-6 flex items-center
-      rounded-full p-1
-      transition-all
-      bg-red-400 peer-checked:bg-green-500
-    ">
-      <div className="
-        w-4 h-4 bg-white rounded-full
-        transform transition
-        translate-x-0 peer-checked:translate-x-5
-      "></div>
-    </div>
-  </label>
-</td>
+                    <div
+                      className="flex h-6 w-11 items-center rounded-full bg-red-400 p-1 transition-all peer-checked:bg-green-500"
+                    >
+                      <div
+                        className="h-4 w-4 translate-x-0 rounded-full bg-white transition peer-checked:translate-x-5"
+                      ></div>
+                    </div>
+                  </label>
+                </td>
 
                 <td className="px-3 py-2">
                   <input

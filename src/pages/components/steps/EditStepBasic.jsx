@@ -29,6 +29,11 @@ export default function EditStepBasic({ setStep, product }) {
 
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [dynamicData, setDynamicData] = useState({});
+  const completedBasicFields = [
+    form.name,
+    form.category_id,
+    form.subcategory_id || form.category_id,
+  ].filter(Boolean).length;
 
   /* ================= PREFILL ================= */
 
@@ -73,7 +78,9 @@ export default function EditStepBasic({ setStep, product }) {
     fetchData();
   }, []);
 
-  const mainCategories = categories.filter((c) => c.parent_id === null);
+  const mainCategories = categories.filter(
+    (c) => c.parent_id === null || c.parent_id === 0,
+  );
   const subCategories = categories.filter(
     (c) => String(c.parent_id) === String(form.category_id),
   );
@@ -140,113 +147,247 @@ export default function EditStepBasic({ setStep, product }) {
     }
   };
 
-  if (pageLoading) return <div className="py-12 text-center">Loading...</div>;
+  if (pageLoading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-600">Loading product details...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-xl border shadow-sm p-6 space-y-6">
-      {/* ROW 1 */}
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="text-sm font-medium">Product Name</label>
-          <input
-            className="input mt-1"
-            value={form.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-          />
+    <div className="space-y-6">
+      <div className="relative overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-r from-blue-50 via-indigo-50 to-cyan-50" />
+        <div className="relative flex flex-col gap-5 p-6 md:flex-row md:items-start md:justify-between md:p-8">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-700 shadow-sm">
+              Edit basics
+            </div>
+            <div>
+              <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+                Edit Product
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm text-slate-500">
+                Update the core product information, category mapping, and content
+                sections before moving to the next edit steps.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 md:min-w-[360px]">
+            <StatCard label="Mode" value="Edit" />
+            <StatCard label="Basic fields" value={`${completedBasicFields}/3`} />
+            <StatCard label="Sections" value={String(tabs.length).padStart(2, "0")} />
+          </div>
         </div>
-
-        <SearchableSelect
-          label="Category"
-          options={mainCategories}
-          value={form.category_id}
-          onChange={(id) => handleChange("category_id", id)}
-          placeholder="Select category"
-        />
-
-        {form.category_id && subCategories.length > 0 ? (
-          <SearchableSelect
-            label="Sub Category"
-            options={subCategories}
-            value={form.subcategory_id}
-            onChange={(id) => handleChange("subcategory_id", id)}
-            placeholder="Select sub category"
-          />
-        ) : (
-          <div />
-        )}
       </div>
 
-      {/* ROW 2 - DYNAMIC */}
-      <div className="border rounded-lg p-4">
-        {/* TABS */}
-        <div className="flex gap-2 flex-wrap mb-4">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-3 py-1.5 text-xs rounded-md transition
-              ${
-                activeTab === tab
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+      <div className="overflow-visible rounded-[28px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)]">
+        <div className="border-b border-slate-100 bg-slate-50/80 px-6 py-5">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">Basic Information</h3>
+              <p className="text-sm text-slate-500">
+                Keep the product name and category structure clean and accurate.
+              </p>
+            </div>
+            <span className="inline-flex w-fit items-center rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-500 ring-1 ring-slate-200">
+              Product #{product?.id || "--"}
+            </span>
+          </div>
         </div>
 
-        {/* CONTENT */}
-        {activeTab === "Product Specifications" ? (
-          <div className="space-y-3">
-            {specifications.map((spec, i) => (
-              <div key={i} className="flex gap-2">
-                <input
-                  placeholder="Field"
-                  className="input w-1/2"
-                  value={spec.key}
-                  onChange={(e) => handleSpecChange(i, "key", e.target.value)}
-                />
-                <input
-                  placeholder="Value"
-                  className="input w-1/2"
-                  value={spec.value}
-                  onChange={(e) => handleSpecChange(i, "value", e.target.value)}
-                />
-                {specifications.length > 1 && (
-                  <button
-                    onClick={() => removeSpec(i)}
-                    className="text-red-500 text-sm"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-            <button onClick={addSpec} className="text-indigo-600 text-sm">
-              + Add Field
-            </button>
+        <div className="grid grid-cols-1 gap-5 p-6 md:grid-cols-3">
+          <div className="md:col-span-1">
+            <FieldLabel
+              label="Product Name"
+              helper="Update the public-facing name shown across your catalog."
+            />
+            <input
+              className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+              value={form.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              placeholder="Enter product name"
+            />
           </div>
-        ) : (
-          <RichTextEditor
-            value={dynamicData[activeTab] || ""}
-            onChange={handleRichTextChange}
+
+          <SearchableSelect
+            label="Category"
+            helper="Select the primary catalog group"
+            options={mainCategories}
+            value={form.category_id}
+            onChange={(id) => handleChange("category_id", id)}
+            placeholder="Select category"
           />
-        )}
+
+          {form.category_id && subCategories.length > 0 ? (
+            <SearchableSelect
+              label="Sub Category"
+              helper="Refine how this product is organized"
+              options={subCategories}
+              value={form.subcategory_id}
+              onChange={(id) => handleChange("subcategory_id", id)}
+              placeholder="Select sub category"
+            />
+          ) : (
+            <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50/70 p-5">
+              <p className="text-sm font-medium text-slate-600">Sub category</p>
+              <p className="mt-2 text-sm text-slate-400">
+                Choose a category first to unlock sub category options.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)]">
+        <div className="border-b border-slate-100 bg-slate-50/80 px-6 py-5">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">Product Content</h3>
+              <p className="text-sm text-slate-500">
+                Refresh descriptions, specifications, and key policy sections.
+              </p>
+            </div>
+            <span className="inline-flex w-fit items-center rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-500 ring-1 ring-slate-200">
+              {activeTab}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6 p-6 xl:flex-row">
+          <div className="xl:w-72 xl:flex-shrink-0">
+            <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-3">
+              <div className="mb-3 px-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Content Sections
+                </p>
+              </div>
+              <div className="space-y-2">
+                {tabs.map((tab, index) => {
+                  const isActive = activeTab === tab;
+
+                  return (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-medium transition ${
+                        isActive
+                          ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg"
+                          : "bg-white text-slate-600 hover:bg-slate-100"
+                      }`}
+                    >
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide opacity-70">
+                          {String(index + 1).padStart(2, "0")}
+                        </p>
+                        <span className="mt-1 block">{tab}</span>
+                      </div>
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full ${
+                          isActive ? "bg-white" : "bg-slate-300"
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="min-w-0 flex-1">
+            {activeTab === "Product Specifications" ? (
+              <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5">
+                <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h4 className="text-base font-semibold text-slate-800">
+                      Product Specifications
+                    </h4>
+                    <p className="text-sm text-slate-500">
+                      Update feature labels and values for this product.
+                    </p>
+                  </div>
+                  <button
+                    onClick={addSpec}
+                    className="inline-flex w-fit items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                  >
+                    + Add Field
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {specifications.map((spec, i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:flex-row md:items-center"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-sm font-semibold text-slate-500">
+                        {i + 1}
+                      </div>
+                      <input
+                        placeholder="Field"
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 md:w-1/2"
+                        value={spec.key}
+                        onChange={(e) => handleSpecChange(i, "key", e.target.value)}
+                      />
+                      <input
+                        placeholder="Value"
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 md:w-1/2"
+                        value={spec.value}
+                        onChange={(e) => handleSpecChange(i, "value", e.target.value)}
+                      />
+                      {specifications.length > 1 && (
+                        <button
+                          onClick={() => removeSpec(i)}
+                          className="h-11 rounded-xl bg-red-50 px-4 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-4">
+                  <p className="text-sm font-semibold text-slate-700">{activeTab}</p>
+                  <p className="text-xs text-slate-500">
+                    Refine the content customers will see for this section.
+                  </p>
+                </div>
+                <RichTextEditor
+                  value={dynamicData[activeTab] || ""}
+                  onChange={handleRichTextChange}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full py-2.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+        className="w-full rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(37,99,235,0.28)] transition-all duration-200 hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {loading ? "Updating..." : "Update & Continue →"}
+        {loading ? "Updating Product..." : "Update and Continue"}
       </button>
     </div>
   );
 }
 
-function SearchableSelect({ label, options, value, onChange, placeholder }) {
+function SearchableSelect({
+  label,
+  helper,
+  options,
+  value,
+  onChange,
+  placeholder,
+}) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const ref = useRef(null);
@@ -266,32 +407,34 @@ function SearchableSelect({ label, options, value, onChange, placeholder }) {
 
   return (
     <div className="relative" ref={ref}>
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <FieldLabel label={label} helper={helper} />
 
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="input mt-1 flex justify-between items-center w-full"
+        className="mt-2 flex h-12 w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition hover:bg-white"
       >
-        <span className={selected ? "" : "text-gray-400"}>
+        <span className={selected ? "text-slate-700" : "text-slate-400"}>
           {selected ? selected.name : placeholder}
         </span>
-        <span>▾</span>
+        <span className={`text-slate-400 transition ${open ? "rotate-180" : ""}`}>
+          ▾
+        </span>
       </button>
 
       {open && (
-        <div className="absolute z-50 w-full mt-1 rounded-lg border bg-white shadow-lg">
-          <div className="p-2 border-b">
+        <div className="absolute z-50 mt-2 w-full rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+          <div className="border-b border-slate-100 p-2">
             <input
               autoFocus
-              className="input"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
               placeholder={`Search ${label}`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          <div className="max-h-52 overflow-y-auto">
+          <div className="max-h-52 overflow-y-auto p-2">
             {filtered.length > 0 ? (
               filtered.map((item) => (
                 <div
@@ -301,19 +444,43 @@ function SearchableSelect({ label, options, value, onChange, placeholder }) {
                     setOpen(false);
                     setSearch("");
                   }}
-                  className="px-3 py-2 text-sm cursor-pointer hover:bg-indigo-50"
+                  className={`cursor-pointer rounded-xl px-3 py-2 text-sm transition hover:bg-indigo-50 ${
+                    String(item.id) === String(value)
+                      ? "bg-blue-50 font-medium text-blue-700"
+                      : "text-slate-700"
+                  }`}
                 >
                   {item.name}
                 </div>
               ))
             ) : (
-              <div className="px-3 py-2 text-sm text-gray-400">
+              <div className="px-3 py-2 text-sm text-slate-400">
                 No results found
               </div>
             )}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function FieldLabel({ label, helper }) {
+  return (
+    <div>
+      <label className="text-sm font-semibold text-slate-700">{label}</label>
+      {helper ? <p className="mt-1 text-xs text-slate-400">{helper}</p> : null}
+    </div>
+  );
+}
+
+function StatCard({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-semibold text-slate-900">{value}</p>
     </div>
   );
 }

@@ -48,9 +48,9 @@ export default function VariantTable({ variants, data, setData }) {
         Configure per-variant price, purchase price, SKU, stock and images.
       </p>
 
-      <div className="overflow-x-auto">
+      <div className="max-h-[68vh] overflow-auto">
         <table className="w-full text-sm border-collapse">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="sticky top-0 z-10 bg-gray-50 text-gray-600 shadow-sm">
             <tr>
               <th className="px-3 py-2 text-left">Variant</th>
               <th className="px-3 py-2">Purchase Price</th>
