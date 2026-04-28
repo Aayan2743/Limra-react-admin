@@ -126,123 +126,158 @@ export default function StepBasic({ setStep, setProductId }) {
   };
 
   if (pageLoading) return <div className="py-12 text-center">Loading...</div>;
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-      {/* ================= ROW 1 ================= */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+    <div className="w-full min-h-screen flex flex-col bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
+      {/* 🔥 HEADER */}
+      <div className="px-8 pt-6 pb-4 flex items-center justify-between">
         <div>
-          <label className="text-sm font-medium text-gray-700">
-            Product Name
-          </label>
-          <input
-            className="input mt-1"
-            value={form.name}
-            onChange={(e) => handleChange("name", e.target.value)}
-          />
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Create Product
+          </h2>
+          <p className="text-sm text-gray-500">
+            Add basic details to get started
+          </p>
         </div>
-
-        <SearchableSelect
-          label="Category"
-          options={mainCategories}
-          value={form.category_id}
-          onChange={(id) => handleChange("category_id", id)}
-          placeholder="Select category"
-        />
-
-        {form.category_id && subCategories.length > 0 ? (
-          <SearchableSelect
-            label="Sub Category"
-            options={subCategories}
-            value={form.subcategory_id}
-            onChange={(id) => handleChange("subcategory_id", id)}
-            placeholder="Select sub category"
-          />
-        ) : (
-          <div />
-        )}
       </div>
 
-      {/* ================= ROW 2 ================= */}
-      <div className="border border-gray-200 rounded-xl bg-gray-50 p-5">
-        {/* TABS */}
-        <div className="flex gap-2 flex-wrap mb-5">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full transition
+      {/* 🔹 MAIN CONTENT */}
+      <div className="flex-1 px-8 pb-28 space-y-6">
+        {/* 🧾 BASIC INFO CARD */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h3 className="text-lg font-semibold mb-5">Basic Information</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+              <label className="text-sm font-medium text-gray-600">
+                Product Name
+              </label>
+              <input
+                className="input mt-2 focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter product name"
+                value={form.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+              />
+            </div>
+
+            <SearchableSelect
+              label="Category"
+              options={mainCategories}
+              value={form.category_id}
+              onChange={(id) => handleChange("category_id", id)}
+              placeholder="Select category"
+            />
+
+            {form.category_id && subCategories.length > 0 && (
+              <SearchableSelect
+                label="Sub Category"
+                options={subCategories}
+                value={form.subcategory_id}
+                onChange={(id) => handleChange("subcategory_id", id)}
+                placeholder="Select sub category"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* 🧠 CONTENT / TABS */}
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="flex gap-6">
+            {/* 🔹 LEFT TAB SIDEBAR */}
+            <div className="w-64 border-r pr-4 space-y-2">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab;
+
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`
+              w-full text-left px-4 py-2 rounded-lg text-sm font-medium transition
+              flex items-center justify-between
               ${
-                activeTab === tab
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-white border border-gray-200 hover:bg-gray-100"
+                isActive
+                  ? "bg-indigo-600 text-white shadow"
+                  : "text-gray-600 hover:bg-gray-100"
               }
             `}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {/* TAB CONTENT */}
-        {activeTab === "Product Specifications" ? (
-          <div className="space-y-3">
-            {specifications.map((spec, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  placeholder="Field"
-                  className="input w-1/2"
-                  value={spec.key}
-                  onChange={(e) =>
-                    handleSpecChange(index, "key", e.target.value)
-                  }
-                />
-                <input
-                  placeholder="Value"
-                  className="input w-1/2"
-                  value={spec.value}
-                  onChange={(e) =>
-                    handleSpecChange(index, "value", e.target.value)
-                  }
-                />
-                {specifications.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeSpecRow(index)}
-                    className="text-red-500 hover:text-red-700 text-sm"
                   >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
+                    <span>{tab}</span>
 
-            <button
-              type="button"
-              onClick={addSpecRow}
-              className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
-            >
-              + Add Field
-            </button>
+                    {/* ACTIVE INDICATOR */}
+                    {isActive && (
+                      <span className="w-2 h-2 bg-white rounded-full"></span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 🔹 RIGHT CONTENT */}
+            <div className="flex-1">
+              {activeTab === "Product Specifications" ? (
+                <div className="space-y-3">
+                  {specifications.map((spec, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <input
+                        placeholder="Field"
+                        className="input w-1/2"
+                        value={spec.key}
+                        onChange={(e) =>
+                          handleSpecChange(index, "key", e.target.value)
+                        }
+                      />
+                      <input
+                        placeholder="Value"
+                        className="input w-1/2"
+                        value={spec.value}
+                        onChange={(e) =>
+                          handleSpecChange(index, "value", e.target.value)
+                        }
+                      />
+
+                      {specifications.length > 1 && (
+                        <button
+                          onClick={() => removeSpecRow(index)}
+                          className="px-3 py-1 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  <button
+                    onClick={addSpecRow}
+                    className="text-sm text-indigo-600 font-medium hover:underline"
+                  >
+                    + Add Specification
+                  </button>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-gray-200 overflow-hidden">
+                  <RichTextEditor
+                    value={dynamicData[activeTab] || ""}
+                    onChange={handleRichTextChange}
+                  />
+                </div>
+              )}
+            </div>
           </div>
-        ) : (
-          <RichTextEditor
-            value={dynamicData[activeTab] || ""}
-            onChange={handleRichTextChange}
-          />
-        )}
+        </div>
       </div>
 
-      {/* SAVE BUTTON — NO EXTRA GAP */}
-      <div className="mt-6">
+      {/* 🔥 FIXED CTA BAR */}
+      <div className="fixed bottom-0 left-0 w-full bg-white border-t px-8 py-4 flex justify-end shadow-lg">
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full py-3 rounded-xl bg-gradient-to-r 
-                   from-indigo-600 to-purple-600
-                   text-white font-medium 
-                   shadow-md hover:opacity-95 transition"
+          className="px-10 py-3 rounded-xl bg-gradient-to-r 
+        from-indigo-600 to-purple-600 text-white font-semibold 
+        shadow-lg hover:scale-[1.02] transition-all duration-300"
         >
-          {loading ? "Saving..." : "Save & Continue →"}
+          {loading ? "Creating Product..." : "Create Product →"}
         </button>
       </div>
     </div>
