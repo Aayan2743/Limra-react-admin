@@ -6,12 +6,11 @@ import VariationModal from "./components/VariationModal";
 import api from "../api/axios";
 import { useAuth } from "../auth/AuthContext";
 import AccessDenied from "../pages/components/AccessDenied";
+import { showErrorToast, showSuccessToast } from "../utils/swal";
 
 export default function POS() {
 
-    const { can,permissions } = useAuth();
-  console.log("User Permissions dfdfdfdf:",can);
-  console.log("User Permissions array:",permissions);
+    const { can } = useAuth();
 
   const barcodeInputRef = useRef(null);
 const [barcode, setBarcode] = useState("");
@@ -76,12 +75,12 @@ const searchByBarcode = async (code) => {
 
     // 🔴 Handle barcode not found
     if (err.response?.data?.message === "Barcode not found") {
-      alert("❌ Barcode not found");
+      showErrorToast("Barcode not found");
       return;
     }
 
     // Other errors
-    alert("Something went wrong");
+    showErrorToast("Something went wrong");
     console.error(err);
   }
 };
@@ -93,7 +92,7 @@ const addVariantToCart = (product, variant) => {
 
     console.log("Variant data:", variant.MRP, variant.price, variant.discount);
   if (variant.stock <= 0) {
-    alert("Out of stock");
+    showErrorToast("Out of stock");
     return;
   }
 
@@ -106,7 +105,7 @@ const addVariantToCart = (product, variant) => {
 
     if (index !== -1) {
       if (prev[index].qty >= variant.stock) {
-        alert("Stock limit reached");
+        showErrorToast("Stock limit reached");
         return prev;
       }
 
@@ -219,7 +218,7 @@ const handleBarcodeKeyDown = (e) => {
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      alert("Cart is empty");
+      showErrorToast("Cart is empty");
       return;
     }
 
@@ -237,7 +236,7 @@ const handleBarcodeKeyDown = (e) => {
 
       const res = await api.post("/admin-dashboard/create-order", payload);
 
-      alert("Order placed successfully ✅");
+      showSuccessToast("Order placed successfully");
 
       // Clear cart
       setCart([]);
@@ -250,7 +249,7 @@ const handleBarcodeKeyDown = (e) => {
       setProducts(refresh.data.data);
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Order failed");
+      showErrorToast(error.response?.data?.message || "Order failed");
     }
   };
 
@@ -259,7 +258,7 @@ const handleBarcodeKeyDown = (e) => {
     if (!selectedProduct) return;
 
     if (variant.stock <= 0) {
-      alert("Out of stock");
+      showErrorToast("Out of stock");
       return;
     }
 
@@ -272,7 +271,7 @@ const handleBarcodeKeyDown = (e) => {
       // Already in cart → increase qty
       if (index !== -1) {
         if (prev[index].qty >= variant.stock) {
-          alert("Stock limit reached");
+          showErrorToast("Stock limit reached");
           return prev;
         }
 
@@ -305,7 +304,7 @@ const handleBarcodeKeyDown = (e) => {
   if (!product) return;
 
   if (variant.stock <= 0) {
-    alert("Out of stock");
+    showErrorToast("Out of stock");
     return;
   }
 
@@ -319,7 +318,7 @@ const handleBarcodeKeyDown = (e) => {
     // Already in cart → increase qty
     if (index !== -1) {
       if (prev[index].qty >= variant.stock) {
-        alert("Stock limit reached");
+        showErrorToast("Stock limit reached");
         return prev;
       }
 
@@ -367,30 +366,47 @@ const handleBarcodeKeyDown = (e) => {
 
 
     
-    <div className="h-screen flex bg-gray-100">
+    <div className="flex h-screen overflow-hidden bg-slate-100">
 
 
 
       {/* LEFT PANEL */}
-      <div className="flex-1 flex flex-col p-4 gap-4">
-        {/* CATEGORY FILTER */}
-        <CategoryPills
-          items={categories}
-          active={category}
-          onChange={setCategory}
-        />
-
-        <div className="flex justify-end">
-          <button
-            onClick={() => setOpenSearch(true)}
-            className="px-4 py-2 bg-black text-white rounded-lg"
-          >
-            🔍 Search Product
-          </button>
+      <div className="flex min-w-0 flex-1 flex-col gap-4 p-4">
+        <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-indigo-50/40 p-4 shadow-sm">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h1 className="text-xl font-semibold text-slate-900">Offline POS Terminal</h1>
+              <p className="text-sm text-slate-500">
+                Fast billing, barcode-ready checkout, and touch-friendly product selection.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                Products: {products.length}
+              </span>
+              <span className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                Cart items: {cart.reduce((sum, item) => sum + item.qty, 0)}
+              </span>
+            </div>
+          </div>
         </div>
 
+        {/* CATEGORY FILTER */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <CategoryPills
+            items={categories}
+            active={category}
+            onChange={setCategory}
+          />
+        </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <button
+            onClick={() => setOpenSearch(true)}
+            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+          >
+            Search Product
+          </button>
 
   {
     can("pos.barcode_search") && (
@@ -401,8 +417,8 @@ const handleBarcodeKeyDown = (e) => {
   value={barcode}
   onChange={(e)=>setBarcode(e.target.value)}
   onKeyDown={handleBarcodeKeyDown}
-  placeholder="Scan barcode..."
-  className="border p-2 rounded-lg w-64"
+  placeholder="Scan barcode and press Enter..."
+  className="h-10 w-72 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
   autoFocus
 />
 
@@ -413,7 +429,7 @@ const handleBarcodeKeyDown = (e) => {
 </div>
 
         {/* PRODUCTS GRID */}
-        <div className="flex-1 grid grid-cols-6 gap-1 overflow-y-auto">
+        <div className="grid flex-1 grid-cols-2 gap-2 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
           {paginatedProducts.map((p) => (
             <ProductCard
               key={p.id}
@@ -425,11 +441,11 @@ const handleBarcodeKeyDown = (e) => {
 
         {/* PAGINATION */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 pb-2">
+          <div className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
-              className="px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               ◀ Prev
             </button>
@@ -441,8 +457,8 @@ const handleBarcodeKeyDown = (e) => {
                   onClick={() => setCurrentPage(i + 1)}
                   className={`px-3 py-2 rounded-lg border transition ${
                     currentPage === i + 1
-                      ? "bg-black text-white border-black"
-                      : "bg-white hover:bg-gray-100"
+                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      : "border-slate-200 bg-white hover:bg-slate-100"
                   }`}
                 >
                   {i + 1}
@@ -453,7 +469,7 @@ const handleBarcodeKeyDown = (e) => {
             <button
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
-              className="px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next ▶
             </button>
@@ -465,14 +481,14 @@ const handleBarcodeKeyDown = (e) => {
      
 
       {openSearch && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-[600px] rounded-xl shadow-lg p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+          <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-semibold">Search Product</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Search Product</h2>
 
               <button
                 onClick={() => setOpenSearch(false)}
-                className="text-red-500 font-bold"
+                className="rounded-lg bg-slate-100 px-2 py-1 font-semibold text-slate-500 transition hover:bg-slate-200"
               >
                 ✕
               </button>
@@ -483,7 +499,7 @@ const handleBarcodeKeyDown = (e) => {
               placeholder="Search product..."
               value={searchText}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full border p-2 rounded-lg mb-3"
+              className="mb-3 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
             />
 
             {/* <div className="max-h-[300px] overflow-y-auto">
@@ -509,7 +525,7 @@ const handleBarcodeKeyDown = (e) => {
         handleProductClick(p);
         setOpenSearch(false);
       }}
-      className="p-3 border-b cursor-pointer hover:bg-gray-100 flex justify-between items-center gap-3"
+      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-indigo-200 hover:bg-indigo-50/40"
     >
       {/* LEFT SIDE */}
       <div className="flex items-center gap-3">

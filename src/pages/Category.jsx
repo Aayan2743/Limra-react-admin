@@ -179,7 +179,7 @@ export default function Category() {
             onClick={handleAdd}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
           >
-            + Add Category
+            + Add Category 
           </button>
         </div>
       </div>

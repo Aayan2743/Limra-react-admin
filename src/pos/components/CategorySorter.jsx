@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   DndContext,
@@ -28,7 +24,7 @@ import AccessDenied from "../../pages/components/AccessDenied";
 
 
 // 🔹 Sortable Item Component
-function SortableItem({ id, name, isActivePos,canDrag  }) {
+function SortableItem({ id, name, isActivePos, canDrag, index }) {
   const {
     attributes,
     listeners,
@@ -36,76 +32,57 @@ function SortableItem({ id, name, isActivePos,canDrag  }) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id, disabled: !canDrag, });
-
-
+  } = useSortable({ id, disabled: !canDrag });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    padding: "12px",
-    marginBottom: "10px",
-    background: isDragging
-      ? "#e6f7ff"
-      : isActivePos == 0
-      ? "#ffe6e6" // 🔴 inactive
-      : "#fff",
-    border: isActivePos == 0
-      ? "1px solid red"
-      : "1px solid #ddd",
-    borderRadius: "10px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    boxShadow: isDragging ? "0 6px 15px rgba(0,0,0,0.15)" : "none",
-    opacity: isActivePos == 0 ? 0.7 : 1,
   };
 
-  return (
-    <div ref={setNodeRef} style={style}>
-      <span>
-        {name}
-        {isActivePos == 0 && (
-          <span
-            style={{
-              marginLeft: "8px",
-              fontSize: "12px",
-              color: "red",
-              fontWeight: "bold",
-            }}
-          >
-            (POS OFF)
-          </span>
-        )}
-      </span>
+  const isInactive = isActivePos == 0;
 
-      {/* Drag Handle */}
-      <span
-      {...(canDrag ? attributes : {})}
-      {...(canDrag ? listeners : {})}
-      style={{
-        cursor: canDrag ? "grab" : "not-allowed",
-        padding: "6px 10px",
-        background: canDrag ? "#f0f0f0" : "#ddd",
-        borderRadius: "6px",
-        fontWeight: "bold",
-        opacity: canDrag ? 1 : 0.5,
-      }}
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`mb-3 flex items-center justify-between rounded-2xl border p-3 transition ${
+        isDragging
+          ? "border-indigo-300 bg-indigo-50 shadow-md"
+          : isInactive
+            ? "border-rose-200 bg-rose-50/70 opacity-80"
+            : "border-slate-200 bg-white shadow-sm hover:border-indigo-200 hover:bg-indigo-50/30"
+      }`}
     >
-      ☰
-    </span>
+      <div className="flex items-center gap-3">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+          {index + 1}
+        </span>
+        <div>
+          <p className="font-medium text-slate-800">{name}</p>
+          <p className={`text-xs ${isInactive ? "text-rose-600" : "text-emerald-600"}`}>
+            {isInactive ? "POS Disabled" : "POS Active"}
+          </p>
+        </div>
+      </div>
+
+      <span
+        {...(canDrag ? attributes : {})}
+        {...(canDrag ? listeners : {})}
+        className={`rounded-lg px-3 py-1 text-sm font-bold transition ${
+          canDrag
+            ? "cursor-grab bg-slate-100 text-slate-700 hover:bg-slate-200 active:cursor-grabbing"
+            : "cursor-not-allowed bg-slate-200 text-slate-400"
+        }`}
+      >
+        ☰
+      </span>
     </div>
   );
 }
 
 // 🔹 Main Component
 export default function CategorySorter() {
-
-  
-    const { can,permissions } = useAuth();
-  console.log("User Permissions dfdfdfdf:",can);
-  console.log("User Permissions array:",permissions);
-
+  const { can } = useAuth();
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +96,7 @@ export default function CategorySorter() {
       })
       .catch((err) => {
         console.error(err);
-        alert("Failed to load categories");
+        showErrorToast("Failed to load categories");
       })
       .finally(() => {
         setLoading(false);
@@ -157,44 +134,81 @@ export default function CategorySorter() {
         closeLoader();
         showSuccessToast("Order updated");
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error(err);
         closeLoader();
         showErrorToast("Failed to save order");
       });
   };
 
-  if (loading) return <p>Loading categories...</p>;
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p className="text-sm text-slate-500">Loading categories...</p>
+      </div>
+    );
+  }
 
- if (!can("category_sorter.view")) {
+  if (!can("category_sorter.view")) {
     return (
       <AccessDenied />
     );
   }
 
-
   return (
-    <div style={{ maxWidth: "450px", margin: "auto" }}>
-      <h3 style={{ textAlign: "center" }}>📂 Drag & Drop Categories</h3>
+    <div className="mx-auto max-w-2xl space-y-4">
+      <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-indigo-50/40 p-5 shadow-sm">
+        <h3 className="text-xl font-semibold text-slate-900">Drag & Drop Categories</h3>
+        <p className="mt-1 text-sm text-slate-500">
+          Reorder POS categories with a smooth drag-and-drop flow.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+            Total: {categories.length}
+          </span>
+          <span className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+            Drag: {can("category_sorter.drag") ? "Enabled" : "Disabled"}
+          </span>
+        </div>
+      </div>
 
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={categories.map((c) => c.id.toString())}
-          strategy={verticalListSortingStrategy}
-        >
-          {categories.map((category) => (
-            <SortableItem
-              key={category.id}
-              id={category.id.toString()}
-              name={category.name}
-              isActivePos={category.is_active_pos} // ✅ PASS HERE
-               canDrag={can("category_sorter.drag")} 
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        {categories.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+            <p className="text-sm font-medium text-slate-700">No categories available</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Add categories first, then return here to reorder them.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mb-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
+              Drag by handle to reorder. Inactive POS categories are highlighted.
+            </div>
+
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={categories.map((c) => c.id.toString())}
+                strategy={verticalListSortingStrategy}
+              >
+                {categories.map((category, index) => (
+                  <SortableItem
+                    key={category.id}
+                    id={category.id.toString()}
+                    name={category.name}
+                    isActivePos={category.is_active_pos}
+                    canDrag={can("category_sorter.drag")}
+                    index={index}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          </>
+        )}
+      </div>
     </div>
   );
 }

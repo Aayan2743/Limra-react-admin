@@ -353,16 +353,17 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Manual Orderss</h1>
-        {/* <p className="text-gray-600 mt-1">Manage and track all manual orders</p> */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-4 md:p-6">
+      <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Manual Orders</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Track walk-in and on-call orders, assign couriers, and monitor shipment progress.
+        </p>
       </div>
 
       {/* Error Alert */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex justify-between items-center">
+        <div className="mb-4 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="text-red-600 text-xl">⚠️</span>
             <span className="text-red-700 font-medium">{error}</span>
@@ -378,7 +379,7 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
 
       {/* Success Alert */}
       {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex justify-between items-center">
+        <div className="mb-4 flex items-center justify-between rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="text-green-600 text-xl">✓</span>
             <span className="text-green-700 font-medium">{success}</span>
@@ -393,12 +394,13 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
       )}
 
       {/* Search Bar & Filters */}
-      <div className="mb-6 flex gap-4 items-end">
+      <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-end gap-3">
         <div className="flex-1">
           <input
             type="text"
             placeholder="Search by invoice, name, or phone..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
             value={search}
             onChange={(e) => {
               setPage(1);
@@ -409,14 +411,14 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
 
         {/* Status Filter */}
         <div className="min-w-max">
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Status</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-600">Status</label>
           <select
             value={filterStatus}
             onChange={(e) => {
               setPage(1);
               setFilterStatus(e.target.value);
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
           >
             <option value="">All Status</option>
             <option value="created">Created</option>
@@ -428,14 +430,14 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
 
         {/* Customer Type Filter */}
         <div className="min-w-max">
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Type</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-600">Type</label>
           <select
             value={filterType}
             onChange={(e) => {
               setPage(1);
               setFilterType(e.target.value);
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
           >
             <option value="">All Types</option>
             <option value="walk-in">Walk-in</option>
@@ -457,24 +459,25 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
             Clear
           </button>
         )}
+        </div>
       </div>
 
       {/* Loading State */}
       {loading && (
-        <div className="flex justify-center items-center py-12">
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white py-12 shadow-sm">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-            <p className="text-gray-600 mt-4">Loading orders...</p>
+            <p className="mt-4 text-slate-600">Loading orders...</p>
           </div>
         </div>
       )}
 
       {/* Table */}
       {!loading && orders.length > 0 && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-100 border-b border-gray-200">
+              <thead className="border-b border-slate-200 bg-slate-100">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold text-gray-700">Invoice</th>
                   <th className="px-4 py-3 text-left font-semibold text-gray-700">Customer</th>
@@ -489,12 +492,12 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
               </thead>
               <tbody>
                 {orders.map((order) => (
-                  <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 font-medium text-gray-900">{order.invoice_number}</td>
-                    <td className="px-4 py-3 text-gray-700">{order.customer_name}</td>
-                    <td className="px-4 py-3 text-gray-700">{order.customer_phone}</td>
+                  <tr key={order.id} className="border-b border-slate-100 transition hover:bg-slate-50/80">
+                    <td className="px-4 py-3 font-semibold text-slate-900">{order.invoice_number}</td>
+                    <td className="px-4 py-3 text-slate-700">{order.customer_name}</td>
+                    <td className="px-4 py-3 text-slate-700">{order.customer_phone}</td>
                     <td className="px-4 py-3">{getCustomerTypeBadge(order)} </td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">₹ {parseFloat(order.paid_amount).toFixed(2)}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-900">₹ {parseFloat(order.paid_amount).toFixed(2)}</td>
                     {/* <td className="px-4 py-3">{getStatusBadge(order.status)} </td> */}
 
 
@@ -503,27 +506,27 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
                       {getStatusBadge(order.status)}
 
                       {order.tracking_number && (
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-slate-600">
                           <span className="font-medium">Tracking:</span> {order.awb_no}
                         </div>
                       )}
 
                       {order.shipping_partner && (
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-slate-600">
                           <span className="font-medium">Partner:</span> {order.shipping_partner}
                         </div>
                       )}
                     </div>
                   </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-slate-600">
                       {new Date(order.created_at).toLocaleDateString("en-IN")}
                     </td>
-                    <td className="px-4 py-3 text-gray-700">{order?.user?.name || "—"}</td>
+                    <td className="px-4 py-3 text-slate-700">{order?.user?.name || "—"}</td>
                     <td className="px-4 py-3 flex gap-2">
 
   <button
     onClick={() => navigate(`/calling/order/${order.id}`)}
-    className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-xs font-medium transition"
+    className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
   >
     View
   </button>
@@ -533,7 +536,7 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
   can("pos_orders.courier") && (
     <button
       onClick={() => openCourierModal(order)}
-      className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-medium transition"
+    className="rounded-lg bg-blue-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-700"
     >
       Courier
     </button>
@@ -547,7 +550,7 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
   can("pos_orders.ratecard") && (
     <button
       onClick={() => fetchRates(order)}
-      className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-xs font-medium transition"
+    className="rounded-lg bg-violet-600 px-3 py-1 text-xs font-medium text-white transition hover:bg-violet-700"
     >
       Rate Card
     </button>
@@ -556,7 +559,7 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
   {/* {order.status === "shipped" && !order.awb_no &&  (
   <button
     onClick={() => resetCourier(order.id)}
-    className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs"
+    className="rounded-lg bg-red-500 px-3 py-1 text-xs text-white transition hover:bg-red-600"
   >
     Change Courier
   </button>
@@ -577,7 +580,7 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
   {order.status === "shipped" && order.awb_no &&  (
   <button
     onClick={() => cancelOrder(order.id)}
-    className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs"
+    className="rounded-lg bg-red-500 px-3 py-1 text-xs text-white transition hover:bg-red-600"
   >
     Cancel Order 
   </button>
@@ -594,20 +597,20 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
 
       {/* Empty State */}
       {!loading && orders.length === 0 && (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
+        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
           <div className="text-6xl mb-4">📭</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Orders Found</h3>
-          <p className="text-gray-600">Try adjusting your search criteria</p>
+          <h3 className="mb-2 text-xl font-semibold text-slate-900">No Orders Found</h3>
+          <p className="text-slate-600">Try adjusting your search criteria</p>
         </div>
       )}
 
       {/* Pagination */}
       {!loading && lastPage > 1 && (
-        <div className="mt-6 flex justify-center items-center gap-2">
+        <div className="mt-6 flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
           <button
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="rounded-lg border border-slate-300 px-4 py-2 text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             ← Previous
           </button>
@@ -619,8 +622,8 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
                 onClick={() => setPage(p)}
                 className={`px-3 py-2 rounded-lg font-medium transition ${
                   page === p
-                    ? "bg-blue-500 text-white"
-                    : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+                    ? "bg-indigo-600 text-white"
+                    : "border border-slate-300 text-slate-700 hover:bg-slate-50"
                 }`}
               >
                 {p}
@@ -631,7 +634,7 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
           <button
             onClick={() => setPage(Math.min(lastPage, page + 1))}
             disabled={page === lastPage}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="rounded-lg border border-slate-300 px-4 py-2 text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Next →
           </button>
@@ -640,28 +643,33 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
 
       {/* Courier Modal */}
       {showCourierModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4">
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Assign Courier</h3>
+            <div className="flex items-start justify-between border-b border-slate-200 bg-gradient-to-r from-white to-indigo-50 px-6 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Assign Courier</h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  Select a courier partner and package dimensions to continue shipping.
+                </p>
+              </div>
               <button
                 onClick={() => setShowCourierModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
+                className="rounded-lg bg-slate-100 px-2 py-1 text-slate-500 transition hover:bg-slate-200"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="px-6 py-4 space-y-4">
+            <div className="space-y-5 px-6 py-5">
               {/* Courier Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Select Courier
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
                   value={selectedCourier}
                   onChange={(e) => setSelectedCourier(e.target.value)}
                   disabled={courierLoading}
@@ -679,10 +687,10 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
 
               {/* Dimensions */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Package Dimensions
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
                   {[
                     { key: "length", label: "Length (cm)" },
                     { key: "breadth", label: "Breadth (cm)" },
@@ -693,7 +701,7 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
                       key={key}
                       type="number"
                       placeholder={label}
-                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
                       value={dimensions[key]}
                       onChange={(e) =>
                         setDimensions({
@@ -709,10 +717,10 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+            <div className="flex justify-end gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4">
               <button
                 onClick={() => setShowCourierModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition"
+                className="rounded-xl border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
                 disabled={courierLoading}
               >
                 Cancel
@@ -720,7 +728,7 @@ const totalRatePages = Math.ceil(rates.length / ratePerPage);
 
               <button
                 onClick={submitCourier}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-xl bg-indigo-600 px-4 py-2 font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={courierLoading}
               >
                 {courierLoading ? "Assigning..." : "Assign Courier"}

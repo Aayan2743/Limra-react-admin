@@ -6,7 +6,11 @@ import StatusBadge from "./components/StatusBadge";
 import ProductSectionAssign from "./settings/components/ProductSectionAssign";
 import { useAuth } from "../auth/AuthContext";
 
-import { showLoader, closeLoader, showErrorToast } from "../utils/swal";
+import {
+  confirmAction,
+  showErrorToast,
+  showSuccessToast,
+} from "../utils/swal";
 
 export default function Products() {
   const [sectionModalOpen, setSectionModalOpen] = useState(false);
@@ -92,6 +96,7 @@ export default function Products() {
       setTotalPages(res.data.pagination?.totalPages || 1);
     } catch (err) {
       console.log(err);
+      showErrorToast("Failed to load products");
     } finally {
       setLoading(false);
     }
@@ -108,12 +113,15 @@ export default function Products() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this product?")) return;
+    const confirmed = await confirmAction("Delete this product?");
+    if (!confirmed) return;
     try {
-      await api.delete(`/admin-dashboard/products/${id}`);
+      await api.delete(`/admin-dashboard/delete-product/${id}`);
+      showSuccessToast("Product deleted");
       fetchProducts();
     } catch (err) {
       console.log(err);
+      showErrorToast("Failed to delete product");
     }
   };
 
@@ -121,7 +129,7 @@ export default function Products() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4 md:p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="w-full space-y-6">
       {/* 🔥 HEADER */}
       <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
         <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-r from-indigo-50 via-blue-50 to-cyan-50" />

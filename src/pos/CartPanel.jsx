@@ -701,144 +701,147 @@ const resetCartPanel = () => {
 
 
   return (
-    <div className="w-96 bg-white border-l flex flex-col h-screen">
+    <div className="flex h-screen w-full max-w-full flex-col overflow-y-auto border-l bg-white md:w-[760px] md:min-w-[760px] md:max-w-[760px] md:shrink-0">
       {/* HEADER */}
-      <div className="p-4 border-b">
-        <h3 className="text-lg font-semibold">Billing</h3>
+      <div className="border-b bg-slate-50 p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-slate-900">Billing</h3>
+          <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+            Items: {cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0)}
+          </span>
+        </div>
       </div>
 
       {/* CUSTOMER */}
-      <div className="p-4 border-b space-y-2">
-        <input
-          value={customer.phone}
-          onChange={async (e) => {
-            const val = e.target.value.replace(/\D/g, "");
+      <div className="space-y-2 border-b p-2.5">
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            value={customer.phone}
+            onChange={async (e) => {
+              const val = e.target.value.replace(/\D/g, "");
 
-            if (val.length <= 10) {
-              setCustomer((p) => ({ ...p, phone: val }));
-            }
+              if (val.length <= 10) {
+                setCustomer((p) => ({ ...p, phone: val }));
+              }
 
-           
+              if (val.length === 10) {
+                try {
+                  setSearchLoading(true);
 
-            if (val.length === 10) {
-              try {
-                setSearchLoading(true);
+                  const res = await api.get(
+                    `/admin-dashboard/pos/search-user?phone=${val}`,
+                  );
 
-                const res = await api.get(
-                  `/admin-dashboard/pos/search-user?phone=${val}`,
-                );
+                  if (res.data.success && res.data.data) {
+                    const user = res.data.data;
 
-                if (res.data.success && res.data.data) {
-                  const user = res.data.data;
+                    setSelectedCustomer(user);
 
-                  setSelectedCustomer(user);
+                    setCustomer((p) => ({
+                      ...p,
+                      name: user.name,
+                    }));
 
-                  setCustomer((p) => ({
-                    ...p,
-                    name: user.name,
-                  }));
+                    setOrderHistory(user.orders || []);
 
-                  setOrderHistory(user.orders || []);
-
-                  if (user.addresses && user.addresses.length > 0) {
-                    setAddresses(user.addresses);
-                    setSelectedAddress(user.addresses[0].id);
-                    setShowNewAddress(false);
+                    if (user.addresses && user.addresses.length > 0) {
+                      setAddresses(user.addresses);
+                      setSelectedAddress(user.addresses[0].id);
+                      setShowNewAddress(false);
+                    } else {
+                      setAddresses([]);
+                      setSelectedAddress(null);
+                      setShowNewAddress(true);
+                    }
                   } else {
+                    setSelectedCustomer(null);
                     setAddresses([]);
-                    setSelectedAddress(null);
-                    setShowNewAddress(true);
+                    setShowNewAddress(false);
+
+                    setPendingPhone(val);
+                    setShowAddCustomerPopup(true);
                   }
-                } else {
+                } catch (err) {
                   setSelectedCustomer(null);
                   setAddresses([]);
                   setShowNewAddress(false);
 
                   setPendingPhone(val);
                   setShowAddCustomerPopup(true);
+                } finally {
+                  setSearchLoading(false);
                 }
-              } catch (err) {
-                setSelectedCustomer(null);
-                setAddresses([]);
-                setShowNewAddress(false);
-
-                setPendingPhone(val);
-                setShowAddCustomerPopup(true);
-              } finally {
-                setSearchLoading(false);
               }
-            }
-          }}
-          placeholder="Mobile Number"
-          className="w-full border rounded-lg px-3 py-2 text-sm"
-          disabled={searchLoading}
-        />
-
-        <input
-          value={customer.name}
-          disabled={!!selectedCustomer}
-          onChange={(e) => setCustomer((p) => ({ ...p, name: e.target.value }))}
-          placeholder="Customer Name"
-          className={`w-full border rounded-lg px-3 py-2 text-sm ${
-            selectedCustomer ? "bg-gray-100 cursor-not-allowed" : ""
-          }`}
-        />
-
-          
-  {
-    can("pos.oncall") && (
-
-
-
-        <div className="flex items-center justify-between border rounded-lg px-3 py-2">
-          <span className="text-xs font-semibold text-gray-600">
-            Customer Type
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              setIsOnCallCustomer((prev) => {
-                const next = !prev;
-                if (!next) setShowNewAddress(false);
-                return next;
-              });
             }}
-            className={`text-xs px-3 py-1 rounded-full font-semibold ${
-              isOnCallCustomer
-                ? "bg-green-100 text-green-700"
-                : "bg-gray-100 text-gray-700"
+            placeholder="Mobile No"
+            className="h-9 w-full rounded-lg border px-2 text-xs"
+            disabled={searchLoading}
+          />
+
+          <input
+            value={customer.name}
+            disabled={!!selectedCustomer}
+            onChange={(e) => setCustomer((p) => ({ ...p, name: e.target.value }))}
+            placeholder="Name"
+            className={`h-9 w-full rounded-lg border px-2 text-xs ${
+              selectedCustomer ? "cursor-not-allowed bg-gray-100" : ""
             }`}
-          >
-            {isOnCallCustomer ? "On Call Customer" : "Normal Customer"}
-          </button>
+          />
         </div>
-        )
-}
 
+        <div className="flex flex-wrap items-center gap-2">
+          {can("pos.oncall") && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsOnCallCustomer((prev) => {
+                  const next = !prev;
+                  if (!next) setShowNewAddress(false);
+                  return next;
+                });
+              }}
+              className={`inline-flex items-center rounded-full border px-3.5 py-1.5 text-[11px] font-semibold shadow-sm transition ${
+                isOnCallCustomer
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <span
+                className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${
+                  isOnCallCustomer ? "bg-emerald-500" : "bg-slate-400"
+                }`}
+              />
+              {isOnCallCustomer ? "On Call" : "Normal"}
+            </button>
+          )}
 
-        {orderHistory.length > 0 && (
-          <button
-            onClick={() => setShowOrderHistory(true)}
-            className="text-sm text-blue-600 underline"
-          >
-            View Purchase History ({orderHistory.length})
-          </button>
-        )}
+          {orderHistory.length > 0 && (
+            <button
+              onClick={() => setShowOrderHistory(true)}
+              className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-[11px] font-semibold text-indigo-700 shadow-sm transition hover:bg-indigo-100"
+            >
+              <span className="mr-1.5 text-xs">History</span>
+              <span className="rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700">
+                {orderHistory.length}
+              </span>
+            </button>
+          )}
+        </div>
 
         {/* ADDRESS UI */}
         {selectedCustomer && isOnCallCustomer && (
-          <div className="mt-3 space-y-3">
+          <div className="mt-2 space-y-2 rounded-xl border border-slate-200 bg-slate-50/70 p-2.5">
             {/* EXISTING ADDRESSES */}
             {addresses.length > 0 && !showNewAddress && (
               <>
-                <label className="text-xs font-semibold text-gray-600">
+                <label className="text-[11px] font-semibold text-slate-600">
                   Select Delivery Address
                 </label>
 
                 <select
                   value={selectedAddress || ""}
                   onChange={(e) => setSelectedAddress(e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 shadow-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-100"
+                  className="h-9 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                 >
                   {addresses.map((addr) => (
                     <option key={addr.id} value={addr.id}>
@@ -855,12 +858,12 @@ const resetCartPanel = () => {
                     const formatted = formatAddressText(selectedAddr || {});
 
                     return (
-                      <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-                        <p className="text-sm font-medium text-gray-800">
+                      <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-2">
+                        <p className="text-xs font-medium text-slate-800">
                           {formatted.line1}
                         </p>
                         {formatted.line2 && (
-                          <p className="mt-1 text-xs text-gray-500">
+                          <p className="mt-0.5 text-[11px] text-slate-500">
                             {formatted.line2}
                           </p>
                         )}
@@ -868,10 +871,10 @@ const resetCartPanel = () => {
                     );
                   })()}
 
-                <div className="flex gap-4 text-xs">
+                <div className="flex gap-2 text-[11px]">
                   <button
                     onClick={() => setShowNewAddress(true)}
-                    className="text-blue-600 underline"
+                    className="rounded-full bg-indigo-100 px-3 py-1 font-semibold text-indigo-700"
                   >
                     + Add New
                   </button>
@@ -882,7 +885,7 @@ const resetCartPanel = () => {
                       setAddresses([]);
                       setShowNewAddress(true);
                     }}
-                    className="text-gray-500 underline"
+                    className="rounded-full bg-slate-200 px-3 py-1 font-semibold text-slate-600"
                   >
                     Cancel
                   </button>
@@ -892,30 +895,31 @@ const resetCartPanel = () => {
 
             {/* NEW ADDRESS FORM */}
             {showNewAddress && (
-              <div className="p-3 border rounded-lg bg-gray-50 space-y-3">
-                <input
-                  placeholder="Door No"
-                  value={newAddress.door_no}
-                  onChange={(e) =>
-                    setNewAddress({
-                      ...newAddress,
-                      door_no: e.target.value,
-                    })
-                  }
-                  className="w-full border rounded px-3 py-2 text-sm"
-                />
-
-                <input
-                  placeholder="Street"
-                  value={newAddress.street}
-                  onChange={(e) =>
-                    setNewAddress({
-                      ...newAddress,
-                      street: e.target.value,
-                    })
-                  }
-                  className="w-full border rounded px-3 py-2 text-sm"
-                />
+              <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-2.5">
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    placeholder="Door No"
+                    value={newAddress.door_no}
+                    onChange={(e) =>
+                      setNewAddress({
+                        ...newAddress,
+                        door_no: e.target.value,
+                      })
+                    }
+                    className="h-8 rounded-md border border-slate-300 px-2 text-xs"
+                  />
+                  <input
+                    placeholder="Street"
+                    value={newAddress.street}
+                    onChange={(e) =>
+                      setNewAddress({
+                        ...newAddress,
+                        street: e.target.value,
+                      })
+                    }
+                    className="h-8 rounded-md border border-slate-300 px-2 text-xs"
+                  />
+                </div>
 
                 <input
                   placeholder="Area"
@@ -926,7 +930,7 @@ const resetCartPanel = () => {
                       area: e.target.value,
                     })
                   }
-                  className="w-full border rounded px-3 py-2 text-sm"
+                  className="h-8 w-full rounded-md border border-slate-300 px-2 text-xs"
                 />
 
                 <input
@@ -938,10 +942,28 @@ const resetCartPanel = () => {
                       address_line: e.target.value,
                     })
                   }
-                  className="w-full border rounded px-3 py-2 text-sm"
+                  className="h-8 w-full rounded-md border border-slate-300 px-2 text-xs"
                 />
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    placeholder="Pincode"
+                    maxLength={6}
+                    value={newAddress.pincode}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+
+                      setNewAddress((prev) => ({
+                        ...prev,
+                        pincode: value,
+                      }));
+
+                      if (value.length === 6) {
+                        fetchCityState(value);
+                      }
+                    }}
+                    className="h-8 rounded-md border border-slate-300 px-2 text-xs"
+                  />
                   <input
                     placeholder="City"
                     value={newAddress.city}
@@ -951,7 +973,7 @@ const resetCartPanel = () => {
                         city: e.target.value,
                       })
                     }
-                    className="border rounded px-3 py-2 text-sm"
+                    className="h-8 rounded-md border border-slate-300 bg-slate-50 px-2 text-xs"
                   />
 
                   <input
@@ -963,35 +985,20 @@ const resetCartPanel = () => {
                         state: e.target.value,
                       })
                     }
-                    className="border rounded px-3 py-2 text-sm"
+                    className="h-8 rounded-md border border-slate-300 bg-slate-50 px-2 text-xs"
                   />
                 </div>
-                <input
-                  placeholder="Pincode"
-                  maxLength={6}
-                  value={newAddress.pincode}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "");
 
-                    setNewAddress((prev) => ({
-                      ...prev,
-                      pincode: value,
-                    }));
-
-                    // ✅ CALL API WHEN 6 DIGITS
-                    if (value.length === 6) {
-                      fetchCityState(value);
-                    }
-                  }}
-                  className="w-full border rounded px-3 py-2 text-sm"
-                />
+                <p className="rounded-md bg-amber-50 px-2 py-1 text-[11px] text-amber-700">
+                  Enter a 6-digit pincode to auto-fill city and state. You can edit them manually if needed.
+                </p>
 
                 {/* ACTION BUTTONS */}
-                <div className="flex justify-end gap-3 text-xs">
+                <div className="flex justify-end gap-2 text-[11px]">
                   {addresses.length > 0 && (
                     <button
                       onClick={() => setShowNewAddress(false)}
-                      className="text-gray-500 underline"
+                      className="rounded-full bg-slate-200 px-3 py-1 font-semibold text-slate-600"
                     >
                       Cancel
                     </button>
@@ -1064,7 +1071,7 @@ const resetCartPanel = () => {
                         );
                       }
                     }}
-                    className="text-green-600 underline font-semibold"
+                    className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-700"
                   >
                     Save Address
                   </button>
@@ -1076,89 +1083,102 @@ const resetCartPanel = () => {
       </div>
 
       {/* ITEMS */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {cart.map((item, i) => (
-          <div
-            key={i}
-            className="border rounded-xl p-3 flex justify-between items-center"
-          >
-            {/* <div>
-              <p className="font-medium text-sm">{item.product_name}</p>
-              <p className="text-xs text-gray-500">{item.variation_name}</p>
-              <p className="text-sm mt-1 font-semibold">₹ SDSDSDSAD {item.price}</p>
-              <p className="text-sm mt-1 font-semibold">₹ {item.MRP}</p>
-              <p className="text-sm mt-1 font-semibold">₹ {item.discount}</p>
-            </div> */}
+      <div className="min-h-[360px] flex-1 p-2">
+        <div className="rounded-xl border border-slate-200">
+          <table className="w-full table-fixed text-[10px]">
+            <thead className="bg-slate-100 text-slate-700">
+              <tr>
+                <th className="px-2 py-2 text-left">Item</th>
+                <th className="px-2 py-2 text-right">MRP</th>
+                <th className="px-2 py-2 text-right">Disc</th>
+                <th className="px-2 py-2 text-right">Rate</th>
+                <th className="px-2 py-2 text-right">GST</th>
+                <th className="px-2 py-2 text-center">Qty</th>
+                <th className="px-2 py-2 text-right">Total</th>
+                <th className="px-2 py-2 text-center">Del</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cart.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="px-3 py-8 text-center text-slate-500">
+                    No items added yet.
+                  </td>
+                </tr>
+              ) : (
+                cart.map((item, i) => {
+                  const price = Number(item.price) || 0;
+                  const mrp = Number(item.mrp || item.MRP) || 0;
+                  const discount = Number(item.discount) || 0;
+                  const gstPercent =
+                    item.tax?.gst_enabled && item.tax?.gst_type === "exclusive"
+                      ? Number(item.tax?.gst_percent) || 0
+                      : 0;
+                  const gstPerUnit = (price * gstPercent) / 100;
+                  const finalPrice = price + gstPerUnit;
+                  const lineTotal = finalPrice * (Number(item.qty) || 0);
 
-      <div>
-  <p className="font-medium text-sm">{item.product_name}</p>
-  <p className="text-xs text-gray-500">{item.variation_name}</p>
-
-  {/* <p className="text-sm mt-1 font-semibold text-green-700">
-    ₹ {item.price}
-  </p> */}
-
-
-    {/* GST TAG */}
-{item.tax?.gst_enabled && item.tax?.gst_type === "exclusive" && (
-  <p className="text-[10px] text-green-600">
-    + GST {item.tax.gst_percent}%
-  </p>
-)}
-
-{/* FINAL PRICE */}
-<p className="text-sm mt-1 font-semibold text-green-700">
-  ₹{" "}
-  {(() => {
-    const price = Number(item.price) || 0;
-    const gstPercent = Number(item.tax?.gst_percent) || 0;
-
-    const finalPrice =
-      item.tax?.gst_enabled && item.tax?.gst_type === "exclusive"
-        ? price + (price * gstPercent) / 100
-        : price;
-
-    return finalPrice.toFixed(2);
-  })()}
-</p>
-
-  {item.mrp && (
-    <p className="text-xs text-gray-400 line-through">
-      ₹ {item.mrp}
-    </p>
-  )}
-
-  {item.discount > 0 && (
-    <p className="text-xs text-red-500">
-      Discount: ₹ {item.discount}
-    </p>
-  )}
-
-
-
-</div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => decreaseQty(i)}
-                className="h-8 w-8 border rounded-lg"
-              >
-                −
-              </button>
-              <span>{item.qty}</span>
-              <button
-                onClick={() => increaseQty(i)}
-                className="h-8 w-8 border rounded-lg"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        ))}
+                  return (
+                    <tr key={i} className="border-t border-slate-100 align-middle">
+                      <td className="px-2 py-1">
+                        <p className="truncate font-medium text-slate-800">{item.product_name}</p>
+                        <p className="truncate text-[10px] text-slate-500">
+                          {item.variation_name}
+                        </p>
+                      </td>
+                      <td className="px-2 py-1 text-right text-slate-600">
+                        {mrp > 0 ? `Rs ${mrp.toFixed(2)}` : "-"}
+                      </td>
+                      <td className="px-2 py-1 text-right text-rose-600">
+                        {discount > 0 ? `Rs ${discount.toFixed(2)}` : "-"}
+                      </td>
+                      <td className="px-2 py-1 text-right font-semibold text-slate-800">
+                        Rs {price.toFixed(2)}
+                      </td>
+                      <td className="px-2 py-1 text-right text-emerald-700">
+                        {gstPercent > 0 ? `${gstPercent.toFixed(0)}%` : "-"}
+                      </td>
+                      <td className="px-2 py-1">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => decreaseQty(i)}
+                            className="h-5 w-5 rounded border border-slate-300 text-slate-700 transition hover:bg-slate-100"
+                          >
+                            -
+                          </button>
+                          <span className="w-4 text-center text-[10px] font-semibold leading-none">{item.qty}</span>
+                          <button
+                            onClick={() => increaseQty(i)}
+                            className="h-5 w-5 rounded border border-slate-300 text-slate-700 transition hover:bg-slate-100"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-2 py-1 text-right font-semibold text-slate-900">
+                        Rs {lineTotal.toFixed(2)}
+                      </td>
+                      <td className="px-2 py-1 text-center">
+                        <button
+                          onClick={() =>
+                            setCart((prev) => prev.filter((_, idx) => idx !== i))
+                          }
+                          className="rounded bg-rose-50 px-2 py-1 text-[10px] font-semibold text-rose-600 transition hover:bg-rose-100"
+                        >
+                          X
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* SUMMARY */}
-      <div className="border-t p-4 space-y-3 text-sm">
+      <div className="border-t p-3 space-y-2 text-sm">
         <Row label="Subtotal" value={`₹ ${subtotal.toFixed(2)}`} />
 
         <div className="flex justify-between items-center">
@@ -1198,7 +1218,7 @@ const resetCartPanel = () => {
 
       {/* PAYMENT */}
       {/* PAYMENT */}
-      <div className="p-4 border-t">
+      <div className="border-t p-3">
         {!isOnCallCustomer && (
           <div className="space-y-2 mb-3">
             <label className="text-xs font-semibold text-gray-600">
@@ -1426,14 +1446,19 @@ const resetCartPanel = () => {
       )}
 
       {showOrderHistory && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white w-[800px] max-h-[90vh] overflow-y-auto rounded-2xl p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Purchase History</h3>
+            <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900">Purchase History</h3>
+                <p className="text-xs text-slate-500">
+                  {orderHistory.length} previous order{orderHistory.length === 1 ? "" : "s"}
+                </p>
+              </div>
               <button
                 onClick={() => setShowOrderHistory(false)}
-                className="text-gray-500 text-lg"
+                className="rounded-lg bg-slate-100 px-2 py-1 text-slate-500 transition hover:bg-slate-200"
               >
                 ✕
               </button>
@@ -1442,47 +1467,57 @@ const resetCartPanel = () => {
             {orderHistory.map((order) => (
               <div
                 key={order.id}
-                className="border rounded-xl p-4 mb-4 bg-gray-50"
+                className="mb-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
               >
                 {/* ORDER HEADER */}
-                <div className="flex justify-between mb-3">
+                <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold">
-                      Invoice: {order.invoice_number}
+                    <p className="text-sm font-semibold text-slate-800">
+                      Invoice #{order.invoice_number}
                     </p>
-                    <p className="text-xs text-gray-500">Date: {order.date}</p>
+                    <p className="text-xs text-slate-500">Date: {order.date}</p>
                   </div>
 
                   <div className="text-right">
-                    <p className="font-semibold text-green-700">
-                      ₹ {order.grand_total}
-                    </p>
+                    <p className="text-[11px] text-slate-500">Grand Total</p>
+                    <p className="text-base font-semibold text-emerald-700">₹ {order.grand_total}</p>
                   </div>
                 </div>
 
                 {/* PRODUCTS */}
-                <div className="space-y-2">
+                <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  <table className="w-full text-xs">
+                    <thead className="bg-slate-100 text-slate-700">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Item</th>
+                        <th className="px-3 py-2 text-center">Qty</th>
+                        <th className="px-3 py-2 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
                   {order.items.map((item) => (
-                    <div
+                    <tr
                       key={item.id}
-                      className="flex justify-between border-b pb-2 text-sm"
+                      className="border-t border-slate-100"
                     >
-                      <div>
-                        <p className="font-medium">{item.product_name}</p>
-                        <p className="text-xs text-gray-500">Qty: {item.qty}</p>
-                      </div>
-
-                      <div className="font-semibold">₹ {item.total}</div>
-                    </div>
+                      <td className="px-3 py-2">
+                        <p className="font-medium text-slate-800">{item.product_name}</p>
+                      </td>
+                      <td className="px-3 py-2 text-center text-slate-600">{item.qty}</td>
+                      <td className="px-3 py-2 text-right font-semibold text-slate-800">₹ {item.total}</td>
+                    </tr>
                   ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             ))}
 
             {orderHistory.length === 0 && (
-              <p className="text-center text-gray-500">
-                No purchase history found
-              </p>
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-12 text-center">
+                <p className="text-sm font-medium text-slate-700">No purchase history found</p>
+                <p className="mt-1 text-xs text-slate-500">Completed orders will appear here.</p>
+              </div>
             )}
           </div>
         </div>
