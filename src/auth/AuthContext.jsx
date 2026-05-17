@@ -11,6 +11,16 @@ export const AuthProvider = ({ children }) => {
   const [permissions, setPermissions] = useState([]); // 🔥 ADD THIS
   const [loading, setLoading] = useState(true);
 
+  const safeJsonParse = (value, fallback) => {
+    if (value == null) return fallback;
+    if (value === "undefined" || value === "null" || value === "") return fallback;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return fallback;
+    }
+  };
+
   /* ================= INIT ================= */
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -18,11 +28,18 @@ export const AuthProvider = ({ children }) => {
     const storedPermissions = localStorage.getItem("permissions");
 
     if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = safeJsonParse(storedUser, null);
+      if (parsedUser) setUser(parsedUser);
+      else localStorage.removeItem("user");
     }
 
     if (storedPermissions) {
-      setPermissions(JSON.parse(storedPermissions)); // 🔥 LOAD
+      const parsedPermissions = safeJsonParse(storedPermissions, []);
+      if (Array.isArray(parsedPermissions)) setPermissions(parsedPermissions); // 🔥 LOAD
+      else {
+        setPermissions([]);
+        localStorage.removeItem("permissions");
+      }
     }
 
     setLoading(false);
